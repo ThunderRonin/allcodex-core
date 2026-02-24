@@ -266,6 +266,15 @@ export function getContent(note: SNote | BNote) {
         };
     }
 
+    // GM-only notes are hidden from shared/public output
+    if (note.hasLabel("gmOnly")) {
+        return {
+            header: "",
+            content: "",
+            isEmpty: true
+        };
+    }
+
     const result: Result = {
         content: note.getContent(),
         header: "",
@@ -308,6 +317,55 @@ function renderIndex(result: Result) {
     result.content += "</ul>";
 }
 
+/**
+ * Expands {{variableName}} placeholders in the document using JSON stored
+ * in any note carrying the #worldVariables label.  The note content must be
+ * a JSON object whose keys map to replacement strings.
+ *
+ * Example note content: { "currency": "Aurens", "capital": "Solara" }
+ * Usage in text: "The currency of the realm is {{currency}}."
+ */
+function applyWorldVariables(document: HTMLElement) {
+    // Look for the world-variables note in the share tree.
+    const varNotes = Object.values(shaca.notes).filter(n => n.hasLabel("worldVariables"));
+    if (varNotes.length === 0) return;
+
+    let vars: Record<string, string> = {};
+    for (const varNote of varNotes) {
+        try {
+            const raw = varNote.getContent();
+            if (typeof raw === "string") {
+                Object.assign(vars, JSON.parse(raw));
+            }
+        } catch {
+            log.error(`worldVariables note "${varNote.noteId}" contains invalid JSON, skipping.`);
+        }
+    }
+    if (Object.keys(vars).length === 0) return;
+
+    const VAR_RE = /\{\{([^{}]+?)\}\}/g;
+
+    // Walk text nodes and replace placeholders.
+    function walkNode(node: HTMLElement) {
+        for (const child of node.childNodes) {
+            if (child instanceof TextNode) {
+                const original = child.rawText;
+                const replaced = original.replace(VAR_RE, (_, name) => {
+                    const val = vars[name.trim()];
+                    return val !== undefined ? escapeHtml(val) : `{{${name}}}`;
+                });
+                if (replaced !== original) {
+                    child.replaceWith(new TextNode(replaced));
+                }
+            } else {
+                walkNode(child as unknown as HTMLElement);
+            }
+        }
+    }
+
+    walkNode(document);
+}
+
 function renderText(result: Result, note: SNote | BNote) {
     if (typeof result.content !== "string") return;
     const parseOpts: Partial<Options> = {
@@ -331,6 +389,14 @@ function renderText(result: Result, note: SNote | BNote) {
             includeNoteEl.replaceWith(...includedDocument);
         }
     }
+
+    // Strip GM-only sections from shared output (elements with class 'gm-only').
+    for (const gmEl of document.querySelectorAll(".gm-only")) {
+        gmEl.remove();
+    }
+
+    // Expand {{variableName}} world variables from the note labeled #worldVariables.
+    applyWorldVariables(document);
 
     result.isEmpty = document.textContent?.trim().length === 0 && document.querySelectorAll("img").length === 0;
 

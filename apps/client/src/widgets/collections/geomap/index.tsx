@@ -172,9 +172,28 @@ export default function GeoView({ note, noteIds, viewConfig, saveConfig }: ViewM
 
 function useLayerData(note: FNote) {
     const [ layerName ] = useNoteLabel(note, "map:style");
+    const [ imageUrl ] = useNoteLabel(note, "map:imageUrl");
+    const [ imageBoundsStr ] = useNoteLabel(note, "map:imageBounds");
     // Memo is needed because it would generate unnecessary reloads due to layer change.
     const layerData = useMemo(() => {
-        // Custom layers.
+        // Fantasy map: image overlay with CRS.Simple pixel coordinates.
+        // Set map:imageUrl to the URL of the SVG/PNG map image.
+        // Optionally set map:imageBounds to "minY,minX,maxY,maxX" (default: "0,0,1000,1000").
+        if (imageUrl) {
+            const parts = imageBoundsStr?.split(",").map(Number);
+            const bounds: [[number, number], [number, number]] =
+                parts?.length === 4
+                    ? [[parts[0], parts[1]], [parts[2], parts[3]]]
+                    : [[0, 0], [1000, 1000]];
+            return {
+                name: "Fantasy Map",
+                type: "image",
+                url: imageUrl,
+                bounds
+            } satisfies MapLayer;
+        }
+
+        // Custom raster layers.
         if (layerName?.startsWith("http")) {
             return {
                 name: "Custom",
@@ -187,7 +206,7 @@ function useLayerData(note: FNote) {
         // Built-in layers.
         const layerData = MAP_LAYERS[layerName ?? ""] ?? MAP_LAYERS[DEFAULT_MAP_LAYER_NAME];
         return layerData;
-    }, [ layerName ]);
+    }, [ layerName, imageUrl, imageBoundsStr ]);
 
     return layerData;
 }
