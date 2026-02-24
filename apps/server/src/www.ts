@@ -15,7 +15,12 @@ import { getDbSize } from "./services/sql_init.js";
 
 const MINIMUM_NODE_VERSION = "20.0.0";
 
-const LOGO = ('\n' +'    _    _ _  _____         _\n' +'   /_ \\  | | |/ __|___   __| |_____ __\n' +'  / _ \\ | | | (__/ _ \\ / _.-| -_) \\ /\n' +' /_/ \_\\|_|_|\\___\\___/ \\__,_|___|/_\_\\\n');
+const LOGO = `
+    _    _ _  _____         _
+   /_ \\  | | |/ __|___   __| |_____ __
+  / _ \\ | | | (__/ _ \\ / _.-| -_) \\ /
+ /_/ \\_\\|_|_|\\___\\___/ \\__,_|___|/_\\_\\ [version]
+`;
 
 export default async function startAllCodexServer() {
     await displayStartupMessage();
