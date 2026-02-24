@@ -337,8 +337,8 @@ function applyWorldVariables(document: HTMLElement) {
             if (typeof raw === "string") {
                 Object.assign(vars, JSON.parse(raw));
             }
-        } catch {
-            log.error(`worldVariables note "${varNote.noteId}" contains invalid JSON, skipping.`);
+        } catch (err) {
+            log.error(`worldVariables note "${varNote.noteId}" contains invalid JSON, skipping. Error: ${err}`);
         }
     }
     if (Object.keys(vars).length === 0) return;
