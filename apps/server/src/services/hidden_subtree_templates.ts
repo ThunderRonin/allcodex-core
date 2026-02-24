@@ -7,6 +7,134 @@ export default function buildHiddenSubtreeTemplates() {
         type: "label"
     };
 
+    const allcodexTemplates: HiddenSubtreeItem = {
+        id: "_templates_lore",
+        title: "Lore Templates",
+        type: "book",
+        children: [
+            {
+                id: "_template_character",
+                type: "text",
+                title: "Character",
+                icon: "bx bx-user",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:fullName", type: "label", value: "promoted,alias=Full Name,single,text" },
+                    { name: "label:aliases", type: "label", value: "promoted,alias=Aliases,single,text" },
+                    { name: "label:age", type: "label", value: "promoted,alias=Age,single,number" },
+                    { name: "label:race", type: "label", value: "promoted,alias=Race,single,text" },
+                    { name: "label:gender", type: "label", value: "promoted,alias=Gender,single,text" },
+                    { name: "label:affiliation", type: "label", value: "promoted,alias=Affiliation,single,text" },
+                    { name: "label:role", type: "label", value: "promoted,alias=Role,single,text" },
+                    { name: "label:status", type: "label", value: "promoted,alias=Status,single,text" },
+                    { name: "label:secrets", type: "label", value: "promoted,alias=Secrets,single,text" },
+                    { name: "label:goals", type: "label", value: "promoted,alias=Goals,single,text" }
+                ]
+            },
+            {
+                id: "_template_location",
+                type: "text",
+                title: "Location",
+                icon: "bx bx-map-pin",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:locationType", type: "label", value: "promoted,alias=Type,single,text" },
+                    { name: "label:region", type: "label", value: "promoted,alias=Region,single,text" },
+                    { name: "label:population", type: "label", value: "promoted,alias=Population,single,number" },
+                    { name: "label:ruler", type: "label", value: "promoted,alias=Ruler,single,text" },
+                    { name: "label:secrets", type: "label", value: "promoted,alias=Secrets,single,text" },
+                    { name: "label:geolocation", type: "label", value: "promoted,alias=Map Coords,single,text" }
+                ]
+            },
+            {
+                id: "_template_faction",
+                type: "text",
+                title: "Faction",
+                icon: "bx bx-shield",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:factionType", type: "label", value: "promoted,alias=Type,single,text" },
+                    { name: "label:foundingDate", type: "label", value: "promoted,alias=Founded,single,text" },
+                    { name: "label:leader", type: "label", value: "promoted,alias=Leader,single,text" },
+                    { name: "label:goals", type: "label", value: "promoted,alias=Goals,single,text" },
+                    { name: "label:secrets", type: "label", value: "promoted,alias=Secrets,single,text" },
+                    { name: "label:status", type: "label", value: "promoted,alias=Status,single,text" }
+                ]
+            },
+            {
+                id: "_template_creature",
+                type: "text",
+                title: "Creature",
+                icon: "bx bx-bug",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:creatureType", type: "label", value: "promoted,alias=Type,single,text" },
+                    { name: "label:habitat", type: "label", value: "promoted,alias=Habitat,single,text" },
+                    { name: "label:diet", type: "label", value: "promoted,alias=Diet,single,text" },
+                    { name: "label:dangerLevel", type: "label", value: "promoted,alias=Danger Level,single,number" },
+                    { name: "label:abilities", type: "label", value: "promoted,alias=Abilities,single,text" }
+                ]
+            },
+            {
+                id: "_template_event",
+                type: "text",
+                title: "Event",
+                icon: "bx bx-calendar-event",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:inWorldDate", type: "label", value: "promoted,alias=In-World Date,single,text" },
+                    { name: "label:outcome", type: "label", value: "promoted,alias=Outcome,single,text" },
+                    { name: "label:consequences", type: "label", value: "promoted,alias=Consequences,single,text" },
+                    { name: "label:secrets", type: "label", value: "promoted,alias=Secrets,single,text" }
+                ]
+            },
+            {
+                id: "_template_timeline",
+                type: "book",
+                title: "Timeline",
+                icon: "bx bx-time-five",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:calendarSystem", type: "label", value: "promoted,alias=Calendar System,single,text" },
+                    { name: "sorted", type: "label" },
+                    { name: "sortBy", type: "label", value: "inWorldDate" }
+                ]
+            },
+            {
+                id: "_template_manuscript",
+                type: "text",
+                title: "Manuscript",
+                icon: "bx bx-book-open",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:genre", type: "label", value: "promoted,alias=Genre,single,text" },
+                    { name: "label:manuscriptStatus", type: "label", value: "promoted,alias=Status,single,text" },
+                    { name: "label:wordCount", type: "label", value: "promoted,alias=Word Count,single,number" }
+                ]
+            },
+            {
+                id: "_template_statblock",
+                type: "text",
+                title: "Statblock",
+                icon: "bx bx-list-check",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:crName", type: "label", value: "promoted,alias=Name,single,text" },
+                    { name: "label:crLevel", type: "label", value: "promoted,alias=CR,single,number" },
+                    { name: "label:ac", type: "label", value: "promoted,alias=AC,single,number" },
+                    { name: "label:hp", type: "label", value: "promoted,alias=HP,single,number" },
+                    { name: "label:str", type: "label", value: "promoted,alias=STR,single,number" },
+                    { name: "label:dex", type: "label", value: "promoted,alias=DEX,single,number" },
+                    { name: "label:con", type: "label", value: "promoted,alias=CON,single,number" },
+                    { name: "label:int", type: "label", value: "promoted,alias=INT,single,number" },
+                    { name: "label:wis", type: "label", value: "promoted,alias=WIS,single,number" },
+                    { name: "label:cha", type: "label", value: "promoted,alias=CHA,single,number" },
+                    { name: "label:abilities", type: "label", value: "promoted,alias=Special Abilities,single,text" }
+                ]
+            }
+        ]
+    };
+
     const templates: HiddenSubtreeItem = {
         id: "_templates",
         title: t("hidden_subtree_templates.built-in-templates"),
@@ -317,5 +445,8 @@ export default function buildHiddenSubtreeTemplates() {
         ]
     };
 
-    return templates;
+    return {
+        ...templates,
+        children: [...(templates.children ?? []), allcodexTemplates]
+    } as HiddenSubtreeItem;
 }
