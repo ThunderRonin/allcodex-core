@@ -1,12 +1,18 @@
 openapi: "3.0.3"
 info:
     version: 1.0.0
-    title: ETAPI
-    description: External Trilium API
+    title: AllCodex ETAPI
+    description: |
+        External API for AllCodex — a lore-keeping server forked from TriliumNext.
+        Use these endpoints to create, read, update, and delete notes,
+        branches, attributes, and attachments programmatically.
+
+        **Documentation endpoints (no auth required):**
+        - `GET /etapi/etapi.openapi.yaml` — raw OpenAPI YAML
+        - `GET /etapi/openapi.json` — full spec as JSON (CORS-open, for LLM/AI agents)
+        - `GET /docs` — interactive Scalar API reference UI
     contact:
-        name: Trilium Notes Team
-        email: contact@eliandoran.me
-        url: https://triliumnotes.org
+        name: AllCodex
     license:
         name: GNU Affero General Public License v3.0 only
         url: https://www.gnu.org/licenses/agpl-3.0.en.html
