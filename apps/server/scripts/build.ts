@@ -12,9 +12,6 @@ async function main() {
 
     // Copy node modules dependencies
     build.copyNodeModules([ "better-sqlite3", "bindings", "file-uri-to-path" ]);
-    build.copy("/node_modules/ckeditor5/dist/ckeditor5-content.css", "ckeditor5-content.css");
-
-    build.buildFrontend();
 }
 
 main();

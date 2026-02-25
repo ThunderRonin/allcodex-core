@@ -28,34 +28,7 @@ async function register(app: express.Application) {
         max: 100 // limit each IP to 100 requests per windowMs
     });
 
-    if (process.env.NODE_ENV === "development") {
-        const { createServer: createViteServer } = await import("vite");
-        const clientDir = path.join(srcRoot, "../client");
-        const vite = await createViteServer({
-            server: { middlewareMode: true },
-            appType: "spa",
-            configFile: path.join(clientDir, "vite.config.mts"),
-            base: `/${assetUrlFragment}/`
-        });
-        app.use(`/${assetUrlFragment}/`, (req, res, next) => {
-            if (req.url.startsWith("/images/") || req.url.startsWith("/doc_notes/")) {
-                // Images and doc notes are served as static assets from the server.
-                next();
-                return;
-            }
-
-            vite.middlewares(req, res, next);
-        });
-        app.get(`/`, [ rootLimiter, auth.checkAuth, csrfMiddleware ], (req, res, next) => {
-            req.url = `/${assetUrlFragment}/index.html`;
-            vite.middlewares(req, res, next);
-        });
-        app.get(`/src/index.ts`, [ rootLimiter ], (req, res, next) => {
-            req.url = `/${assetUrlFragment}/src/index.ts`;
-            vite.middlewares(req, res, next);
-        });
-        app.use(`/node_modules/@excalidraw/excalidraw/dist/prod`, persistentCacheStatic(path.join(srcRoot, "../../node_modules/@excalidraw/excalidraw/dist/prod")));
-    } else {
+    if (process.env.NODE_ENV !== "development") {
         const publicDir = path.join(resourceDir, "public");
         if (!existsSync(publicDir)) {
             throw new Error(`Public directory is missing at: ${path.resolve(publicDir)}`);

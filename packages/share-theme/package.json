@@ -30,7 +30,6 @@
   },
   "devDependencies": {
     "@digitak/esrun": "3.2.26",
-    "@triliumnext/ckeditor5": "workspace:*",
     "@typescript-eslint/eslint-plugin": "8.56.0",
     "@typescript-eslint/parser": "8.56.0",
     "dotenv": "17.3.1",
