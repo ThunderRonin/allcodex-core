@@ -46,10 +46,13 @@ function checkEtapiAuth(req: Request, res: Response, next: NextFunction) {
         next();
     } else {
         sendError(res, 401, "NOT_AUTHENTICATED", "Not authenticated");
+        log.request(req, res, 0);
     }
 }
 
 function processRequest(req: Request, res: Response, routeHandler: ApiRequestHandler, next: NextFunction, method: string, path: string) {
+    const start = Date.now();
+
     try {
         cls.namespace.bindEmitter(req);
         cls.namespace.bindEmitter(res);
@@ -59,11 +62,14 @@ function processRequest(req: Request, res: Response, routeHandler: ApiRequestHan
             cls.set("localNowDateTime", req.headers["trilium-local-now-datetime"]);
 
             const cb = () => routeHandler(req, res, next);
+            const result = sql.transactional(cb);
 
-            return sql.transactional(cb);
+            log.request(req, res, Date.now() - start);
+            return result;
         });
     } catch (e: any) {
         log.error(`${method} ${path} threw exception ${e.message} with stacktrace: ${e.stack}`);
+        log.request(req, res, Date.now() - start);
 
         if (e instanceof EtapiError) {
             sendError(res, e.statusCode, e.code, e.message);

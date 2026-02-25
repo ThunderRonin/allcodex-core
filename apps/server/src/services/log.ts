@@ -8,6 +8,28 @@ import dataDir from "./data_dir.js";
 import cls from "./cls.js";
 import config, { LOGGING_DEFAULT_RETENTION_DAYS } from "./config.js";
 
+// ── ANSI color codes (console only, never written to files) ──
+const c = {
+    reset:   "\x1b[0m",
+    bold:    "\x1b[1m",
+    dim:     "\x1b[2m",
+    red:     "\x1b[31m",
+    green:   "\x1b[32m",
+    yellow:  "\x1b[33m",
+    blue:    "\x1b[34m",
+    magenta: "\x1b[35m",
+    cyan:    "\x1b[36m",
+    gray:    "\x1b[90m",
+};
+
+type LogLevel = "info" | "error" | "warn";
+
+const LEVEL_STYLE: Record<LogLevel, { badge: string; color: string }> = {
+    info:  { badge: " INFO ", color: c.cyan },
+    warn:  { badge: " WARN ", color: c.yellow },
+    error: { badge: "ERROR ", color: c.red },
+};
+
 if (!fs.existsSync(dataDir.LOG_DIR)) {
     fs.mkdirSync(dataDir.LOG_DIR, 0o700);
 }
@@ -51,8 +73,8 @@ async function cleanupOldLogFiles() {
         const logFiles: Array<{name: string, mtime: Date, path: string}> = [];
 
         for (const file of files) {
-            // Security: Only process files matching our log pattern
-            if (!/^trilium-\d{4}-\d{2}-\d{2}\.log$/.test(file)) {
+            // Security: Only process files matching our log pattern (trilium legacy + allcodex)
+            if (!/^(trilium|allcodex)-\d{4}-\d{2}-\d{2}\.log$/.test(file)) {
                 continue;
             }
 
@@ -106,7 +128,7 @@ async function cleanupOldLogFiles() {
 function initLogFile() {
     todaysMidnight = getTodaysMidnight();
 
-    const logPath = `${dataDir.LOG_DIR}/trilium-${formatDate()}.log`;
+    const logPath = `${dataDir.LOG_DIR}/allcodex-${formatDate()}.log`;
     const isRotating = !!logFile;
 
     if (isRotating) {
@@ -133,28 +155,43 @@ function checkDate(millisSinceMidnight: number) {
     return millisSinceMidnight;
 }
 
-function log(str: string | Error) {
+/** Write a plain-text line to the log file and return the formatted timestamp. */
+function _writeToFile(plainLine: string): string {
+    let ms = Date.now() - todaysMidnight.getTime();
+    ms = checkDate(ms);
+    const ts = formatTime(ms);
+    logFile!.write(`${ts} ${plainLine}${EOL}`);
+    return ts;
+}
+
+function log(str: string | Error, level: LogLevel = "info") {
     const bundleNoteId = cls.get("bundleNoteId");
+    const scriptPrefix = bundleNoteId ? `[Script ${bundleNoteId}] ` : "";
+    const fileLevel = level !== "info" ? `${level.toUpperCase()}: ` : "";
 
-    if (bundleNoteId) {
-        str = `[Script ${bundleNoteId}] ${str}`;
-    }
+    // ── file: plain text ──
+    const ts = _writeToFile(`${scriptPrefix}${fileLevel}${str}`);
 
-    let millisSinceMidnight = Date.now() - todaysMidnight.getTime();
+    // ── console: colorful ──
+    const style = LEVEL_STYLE[level];
+    const cTs     = `${c.gray}${ts}${c.reset}`;
+    const cBadge  = `${style.color}${c.bold}${style.badge}${c.reset}`;
+    const cScript = scriptPrefix ? `${c.magenta}${scriptPrefix.trim()}${c.reset} ` : "";
+    const cMsg    = level === "error" ? `${c.red}${str}${c.reset}` : String(str);
 
-    millisSinceMidnight = checkDate(millisSinceMidnight);
-
-    logFile!.write(`${formatTime(millisSinceMidnight)} ${str}${EOL}`);
-
-    console.log(str);
+    console.log(`${cTs} ${cBadge} ${cScript}${cMsg}`);
 }
 
 function info(message: string | Error) {
-    log(message);
+    log(message, "info");
+}
+
+function warn(message: string | Error) {
+    log(message, "warn");
 }
 
 function error(message: string | Error | unknown) {
-    log(`ERROR: ${message}`);
+    log(String(message), "error");
 }
 
 const requestBlacklist = ["/app", "/images", "/stylesheets", "/api/recent-notes"];
@@ -170,7 +207,33 @@ function request(req: Request, res: Response, timeMs: number, responseLength: nu
         return;
     }
 
-    info((timeMs >= 10 ? "Slow " : "") + `${res.statusCode} ${req.method} ${req.url} with ${responseLength} bytes took ${timeMs}ms`);
+    const status = res.statusCode;
+    const method = req.method;
+    const url = req.url;
+    const isSlow = timeMs >= 10;
+
+    // ── file: plain text ──
+    const ts = _writeToFile(`${isSlow ? "Slow " : ""}${status} ${method} ${url} ${responseLength}b ${timeMs}ms`);
+
+    // ── console: colorful ──
+    const cTs = `${c.gray}${ts}${c.reset}`;
+    const cBadge = `${c.blue}${c.bold}  REQ ${c.reset}`;
+
+    const cStatus = status >= 500 ? `${c.red}${c.bold}${status}${c.reset}`
+        : status >= 400 ? `${c.yellow}${status}${c.reset}`
+        : status >= 300 ? `${c.cyan}${status}${c.reset}`
+        : `${c.green}${status}${c.reset}`;
+
+    const cMethod = `${c.bold}${method}${c.reset}`;
+    const cBytes = `${c.dim}${responseLength}b${c.reset}`;
+
+    const cTime = timeMs >= 100 ? `${c.red}${c.bold}${timeMs}ms${c.reset}`
+        : timeMs >= 10 ? `${c.yellow}${timeMs}ms${c.reset}`
+        : `${c.dim}${timeMs}ms${c.reset}`;
+
+    const cSlow = isSlow ? `${c.yellow}${c.bold}Slow ${c.reset}` : "";
+
+    console.log(`${cTs} ${cBadge} ${cSlow}${cStatus} ${cMethod} ${url} ${cBytes} ${cTime}`);
 }
 
 function pad(num: number) {
@@ -199,6 +262,7 @@ function formatDate() {
 
 export default {
     info,
+    warn,
     error,
     request
 };
