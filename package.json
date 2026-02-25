@@ -1,7 +1,7 @@
 {
-  "name": "@triliumnext/source",
+  "name": "@allcodex/source",
   "version": "0.101.3",
-  "description": "Build your personal knowledge base with Trilium Notes",
+  "description": "AllCodex — AI-powered worldbuilding knowledge base",
   "directories": {
     "doc": "docs"
   },

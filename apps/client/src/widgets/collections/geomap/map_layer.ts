@@ -5,6 +5,12 @@ export type MapLayer = ({
     type: "raster";
     url: string;
     attribution: string;
+} | {
+    /** Fantasy/custom image overlay using Leaflet CRS.Simple pixel coordinates. */
+    type: "image";
+    url: string;
+    /** Image bounds as [[minY, minX], [maxY, maxX]] in pixel coordinates. */
+    bounds: [[number, number], [number, number]];
 }) & {
     // Common properties
     name: string;

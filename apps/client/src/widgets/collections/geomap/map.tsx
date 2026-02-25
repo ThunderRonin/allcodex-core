@@ -27,29 +27,45 @@ export default function Map({ coordinates, zoom, layerData, viewportChanged, chi
 
     useImperativeHandle(apiRef ?? null, () => mapRef.current);
 
+    // Determine if we need CRS.Simple for image-overlay (fantasy) maps.
+    const isImageLayer = layerData.type === "image";
+
     useEffect(() => {
         if (!containerRef.current) return;
-        const mapInstance = L.map(containerRef.current, {
-            worldCopyJump: false,
-            maxBounds: [
-                [-90, -180],
-                [90, 180]
-            ],
-            minZoom: 2
-        });
+
+        const mapOptions: L.MapOptions = isImageLayer
+            ? {
+                crs: L.CRS.Simple,
+                minZoom: -4,
+                maxZoom: 4
+            }
+            : {
+                worldCopyJump: false,
+                maxBounds: [
+                    [-90, -180],
+                    [90, 180]
+                ],
+                minZoom: 2
+            };
+
+        const mapInstance = L.map(containerRef.current, mapOptions);
 
         mapRef.current = mapInstance;
         return () => {
             mapInstance.off();
             mapInstance.remove();
         };
-    }, []);
+    // Re-create map when switching between geographic and image CRS.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ isImageLayer ]);
 
     // Load the layer asynchronously.
     const [ layer, setLayer ] = useState<Layer>();
     useEffect(() => {
         async function load() {
-            if (layerData.type === "vector") {
+            if (layerData.type === "image") {
+                setLayer(L.imageOverlay(layerData.url, layerData.bounds));
+            } else if (layerData.type === "vector") {
                 const style = (typeof layerData.style === "string" ? layerData.style : await layerData.style());
                 await import("@maplibre/maplibre-gl-leaflet");
 

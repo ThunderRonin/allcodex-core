@@ -1,6 +1,6 @@
 {
   "about": {
-    "title": "About Trilium Notes",
+    "title": "About AllCodex",
     "homepage": "Homepage:",
     "app_version": "App version:",
     "db_version": "DB version:",
@@ -167,7 +167,7 @@
     "numberedList": "<code>1.</code> or <code>1)</code> followed by space for numbered list",
     "blockQuote": "start a line with <code>></code> followed by space for block quote",
     "troubleshooting": "Troubleshooting",
-    "reloadFrontend": "reload Trilium frontend",
+    "reloadFrontend": "reload AllCodex frontend",
     "showDevTools": "show developer tools",
     "showSQLConsole": "show SQL console",
     "other": "Other",
@@ -180,11 +180,11 @@
     "importDescription": "Content of the selected file(s) will be imported as child note(s) into",
     "importZipRecommendation": "When importing a ZIP file, the note hierarchy will reflect the subdirectory structure within the archive.",
     "options": "Options",
-    "safeImportTooltip": "Trilium <code>.zip</code> export files can contain executable scripts which may contain harmful behavior. Safe import will deactivate automatic execution of all imported scripts. Uncheck \"Safe import\" only if the imported archive is supposed to contain executable scripts and you completely trust the contents of the import file.",
+    "safeImportTooltip": "AllCodex <code>.zip</code> export files can contain executable scripts which may contain harmful behavior. Safe import will deactivate automatic execution of all imported scripts. Uncheck \"Safe import\" only if the imported archive is supposed to contain executable scripts and you completely trust the contents of the import file.",
     "safeImport": "Safe import",
-    "explodeArchivesTooltip": "If this is checked then Trilium will read <code>.zip</code>, <code>.enex</code> and <code>.opml</code> files and create notes from files insides those archives. If unchecked, then Trilium will attach the archives themselves to the note.",
+    "explodeArchivesTooltip": "If this is checked then AllCodex will read <code>.zip</code>, <code>.enex</code> and <code>.opml</code> files and create notes from files insides those archives. If unchecked, then AllCodex will attach the archives themselves to the note.",
     "explodeArchives": "Read contents of <code>.zip</code>, <code>.enex</code> and <code>.opml</code> archives.",
-    "shrinkImagesTooltip": "<p>If you check this option, Trilium will attempt to shrink the imported images by scaling and optimization which may affect the perceived image quality. If unchecked, images will be imported without changes.</p><p>This doesn't apply to <code>.zip</code> imports with metadata since it is assumed these files are already optimized.</p>",
+    "shrinkImagesTooltip": "<p>If you check this option, AllCodex will attempt to shrink the imported images by scaling and optimization which may affect the perceived image quality. If unchecked, images will be imported without changes.</p><p>This doesn't apply to <code>.zip</code> imports with metadata since it is assumed these files are already optimized.</p>",
     "shrinkImages": "Shrink images",
     "textImportedAsText": "Import HTML, Markdown and TXT as text notes if it's unclear from metadata",
     "codeImportedAsCode": "Import recognized code files (e.g. <code>.json</code>) as code notes if it's unclear from metadata",
@@ -321,7 +321,7 @@
     "options": "Options",
     "shrink_images": "Shrink images",
     "upload": "Upload",
-    "tooltip": "If you check this option, Trilium will attempt to shrink the uploaded images by scaling and optimization which may affect the perceived image quality. If unchecked, images will be uploaded without changes."
+    "tooltip": "If you check this option, AllCodex will attempt to shrink the uploaded images by scaling and optimization which may affect the perceived image quality. If unchecked, images will be uploaded without changes."
   },
   "attribute_detail": {
     "attr_detail_title": "Attribute Detail Title",
@@ -340,7 +340,7 @@
     "multiplicity": "Multiplicity",
     "single_value": "Single value",
     "multi_value": "Multi value",
-    "label_type_title": "Type of the label will help Trilium to choose suitable interface to enter the label value.",
+    "label_type_title": "Type of the label will help AllCodex to choose suitable interface to enter the label value.",
     "label_type": "Type",
     "text": "Text",
     "number": "Number",
@@ -368,8 +368,8 @@
     "calendar_root": "marks note which should be used as root for day notes. Only one should be marked as such.",
     "archived": "notes with this label won't be visible by default in search results (also in Jump To, Add Link dialogs etc).",
     "exclude_from_export": "notes (with their sub-tree) won't be included in any note export",
-    "run": "defines on which events script should run. Possible values are:\n<ul>\n<li>frontendStartup - when Trilium frontend starts up (or is refreshed), but not on mobile.</li>\n<li>mobileStartup - when Trilium frontend starts up (or is refreshed), on mobile.</li>\n<li>backendStartup - when Trilium backend starts up</li>\n<li>hourly - run once an hour. You can use additional label <code>runAtHour</code> to specify at which hour.</li>\n<li>daily - run once a day</li>\n</ul>",
-    "run_on_instance": "Define which trilium instance should run this on. Default to all instances.",
+    "run": "defines on which events script should run. Possible values are:\n<ul>\n<li>frontendStartup - when AllCodex frontend starts up (or is refreshed), but not on mobile.</li>\n<li>mobileStartup - when AllCodex frontend starts up (or is refreshed), on mobile.</li>\n<li>backendStartup - when AllCodex backend starts up</li>\n<li>hourly - run once an hour. You can use additional label <code>runAtHour</code> to specify at which hour.</li>\n<li>daily - run once a day</li>\n</ul>",
+    "run_on_instance": "Define which AllCodex instance should run this on. Default to all instances.",
     "run_at_hour": "On which hour should this run. Should be used together with <code>#run=hourly</code>. Can be defined multiple times for more runs during the day.",
     "disable_inclusion": "scripts with this label won't be included into parent script execution.",
     "sorted": "keeps child notes sorted by title alphabetically",
@@ -379,15 +379,15 @@
     "hide_promoted_attributes": "Hide promoted attributes on this note",
     "read_only": "editor is in read only mode. Works only for text and code notes.",
     "auto_read_only_disabled": "text/code notes can be set automatically into read mode when they are too large. You can disable this behavior on per-note basis by adding this label to the note",
-    "app_css": "marks CSS notes which are loaded into the Trilium application and can thus be used to modify Trilium's looks.",
-    "app_theme": "marks CSS notes which are full Trilium themes and are thus available in Trilium options.",
-    "app_theme_base": "set to \"next\", \"next-light\", or \"next-dark\" to use the corresponding TriliumNext theme (auto, light or dark) as the base for a custom theme, instead of the legacy one.",
+    "app_css": "marks CSS notes which are loaded into the AllCodex application and can thus be used to modify AllCodex's looks.",
+    "app_theme": "marks CSS notes which are full AllCodex themes and are thus available in AllCodex options.",
+    "app_theme_base": "set to \"next\", \"next-light\", or \"next-dark\" to use the corresponding AllCodex theme (auto, light or dark) as the base for a custom theme, instead of the legacy one.",
     "css_class": "value of this label is then added as CSS class to the node representing given note in the tree. This can be useful for advanced theming. Can be used in template notes.",
     "icon_class": "value of this label is added as a CSS class to the icon on the tree which can help visually distinguish the notes in the tree. Example might be bx bx-home - icons are taken from boxicons. Can be used in template notes.",
     "page_size": "number of items per page in note listing",
     "custom_request_handler": "see <a href=\"javascript:\" data-help-page=\"custom-request-handler.html\">Custom request handler</a>",
     "custom_resource_provider": "see <a href=\"javascript:\" data-help-page=\"custom-request-handler.html\">Custom request handler</a>",
-    "widget": "marks this note as a custom widget which will be added to the Trilium component tree",
+    "widget": "marks this note as a custom widget which will be added to the AllCodex component tree",
     "workspace": "marks this note as a workspace which allows easy hoisting",
     "workspace_icon_class": "defines box icon CSS class which will be used in tab when hoisted to this note",
     "workspace_tab_background_color": "CSS color used in the note tab when hoisted to this note",
@@ -401,7 +401,7 @@
     "bookmark_folder": "note with this label will appear in bookmarks as folder (allowing access to its children)",
     "share_hidden_from_tree": "this note is hidden from left navigation tree, but still accessible with its URL",
     "share_external_link": "note will act as a link to an external website in the share tree",
-    "share_alias": "define an alias using which the note will be available under https://your_trilium_host/share/[your_alias]",
+    "share_alias": "define an alias using which the note will be available under https://your_allcodex_host/share/[your_alias]",
     "share_omit_default_css": "default share page CSS will be omitted. Use when you make extensive styling changes.",
     "share_root": "marks note which is served on /share root.",
     "share_description": "define text to be added to the HTML meta tag for description",
@@ -566,9 +566,9 @@
   },
   "attachments_actions": {
     "open_externally": "Open externally",
-    "open_externally_title": "File will be open in an external application and watched for changes. You'll then be able to upload the modified version back to Trilium.",
+    "open_externally_title": "File will be open in an external application and watched for changes. You'll then be able to upload the modified version back to AllCodex.",
     "open_custom": "Open custom",
-    "open_custom_title": "File will be open in an external application and watched for changes. You'll then be able to upload the modified version back to Trilium.",
+    "open_custom_title": "File will be open in an external application and watched for changes. You'll then be able to upload the modified version back to AllCodex.",
     "download": "Download",
     "rename_attachment": "Rename attachment",
     "upload_new_revision": "Upload new revision",
@@ -657,7 +657,7 @@
     "reload_frontend": "Reload Frontend",
     "show_hidden_subtree": "Show Hidden Subtree",
     "show_help": "Show Help",
-    "about": "About Trilium Notes",
+    "about": "About AllCodex",
     "logout": "Logout",
     "show-cheatsheet": "Show Cheatsheet",
     "toggle-zen-mode": "Zen Mode",
@@ -691,7 +691,7 @@
     "note_source": "Note source",
     "note_attachments": "Note attachments",
     "open_note_externally": "Open note externally",
-    "open_note_externally_title": "File will be open in an external application and watched for changes. You'll then be able to upload the modified version back to Trilium.",
+    "open_note_externally_title": "File will be open in an external application and watched for changes. You'll then be able to upload the modified version back to AllCodex.",
     "open_note_custom": "Open note custom",
     "open_note_on_server": "Open note on server",
     "import_files": "Import files",
@@ -728,7 +728,7 @@
   },
   "code_buttons": {
     "execute_button_title": "Execute script",
-    "trilium_api_docs_button_title": "Open Trilium API docs",
+    "trilium_api_docs_button_title": "Open AllCodex API docs",
     "save_to_note_button_title": "Save to note",
     "opening_api_docs_message": "Opening API docs...",
     "sql_console_saved_message": "SQL Console note has been saved into {{note_path}}"
@@ -1025,7 +1025,7 @@
     "editor_crashed_details_intro": "If you experience this error several times, consider reporting it on GitHub by pasting the information below.",
     "editor_crashed_details_title": "Technical information",
     "auto-detect-language": "Auto-detected",
-    "keeps-crashing": "Editing component keeps crashing. Please try restarting Trilium. If problem persists, consider creating a bug report."
+    "keeps-crashing": "Editing component keeps crashing. Please try restarting AllCodex. If problem persists, consider creating a bug report."
   },
   "empty": {
     "open_note_instruction": "Open a note by typing the note's title into the input below or choose a note in the tree.",
@@ -1075,11 +1075,11 @@
     "disabled_button_enable": "Enable render note"
   },
   "web_view_setup": {
-    "title": "Create a live view of a webpage directly into Trilium",
-    "url_placeholder": "Enter or paste the website address, for example https://triliumnotes.org",
+    "title": "Create a live view of a webpage directly into AllCodex",
+    "url_placeholder": "Enter or paste the website address, for example https://allcodex.app",
     "create_button": "Create Web View",
     "invalid_url_title": "Invalid address",
-    "invalid_url_message": "Insert a valid web address, for example https://triliumnotes.org.",
+    "invalid_url_message": "Insert a valid web address, for example https://allcodex.app.",
     "disabled_description": "This web view was imported from an external source. To help protect you from phishing or malicious content, it isn’t loading automatically. You can enable it if you trust the source.",
     "disabled_button_enable": "Enable web view"
   },
@@ -1165,7 +1165,7 @@
   },
   "max_content_width": {
     "title": "Content Width",
-    "default_description": "Trilium by default limits max content width to improve readability for maximized screens on wide screens.",
+    "default_description": "AllCodex by default limits max content width to improve readability for maximized screens on wide screens.",
     "max_width_label": "Max content width",
     "max_width_unit": "pixels",
     "centerContent": "Keep content centered"
@@ -1187,9 +1187,9 @@
     "auto_theme": "Legacy (Follow system color scheme)",
     "light_theme": "Legacy (Light)",
     "dark_theme": "Legacy (Dark)",
-    "triliumnext": "Trilium (Follow system color scheme)",
-    "triliumnext-light": "Trilium (Light)",
-    "triliumnext-dark": "Trilium (Dark)",
+    "triliumnext": "AllCodex (Follow system color scheme)",
+    "triliumnext-light": "AllCodex (Light)",
+    "triliumnext-dark": "AllCodex (Dark)",
     "layout": "Layout",
     "layout-vertical-title": "Vertical",
     "layout-horizontal-title": "Horizontal",
@@ -1377,7 +1377,7 @@
   "images": {
     "images_section_title": "Images",
     "download_images_automatically": "Download images automatically for offline use.",
-    "download_images_description": "Pasted HTML can contain references to online images, Trilium will find those references and download the images so that they are available offline.",
+    "download_images_description": "Pasted HTML can contain references to online images, AllCodex will find those references and download the images so that they are available offline.",
     "enable_image_compression": "Enable image compression",
     "max_image_dimensions": "Max width / height of an image (image will be resized if it exceeds this setting).",
     "max_image_dimensions_unit": "pixels",
@@ -1432,7 +1432,7 @@
   },
   "tray": {
     "title": "System Tray",
-    "enable_tray": "Enable tray (Trilium needs to be restarted for this change to take effect)"
+    "enable_tray": "Enable tray (AllCodex needs to be restarted for this change to take effect)"
   },
   "heading_style": {
     "title": "Heading Style",
@@ -1494,7 +1494,7 @@
   },
   "backup": {
     "automatic_backup": "Automatic backup",
-    "automatic_backup_description": "Trilium can back up the database automatically:",
+    "automatic_backup_description": "AllCodex can back up the database automatically:",
     "enable_daily_backup": "Enable daily backup",
     "enable_weekly_backup": "Enable weekly backup",
     "enable_monthly_backup": "Enable monthly backup",
@@ -1509,7 +1509,7 @@
   },
   "etapi": {
     "title": "ETAPI",
-    "description": "ETAPI is a REST API used to access Trilium instance programmatically, without UI.",
+    "description": "ETAPI is a REST API used to access AllCodex programmatically, without UI.",
     "create_token": "Create new ETAPI token",
     "existing_tokens": "Existing tokens",
     "no_tokens_yet": "There are no tokens yet. Click on the button above to create one.",
@@ -1521,7 +1521,7 @@
     "default_token_name": "new token",
     "error_empty_name": "Token name can't be empty",
     "token_created_title": "ETAPI token created",
-    "token_created_message": "Copy the created token into clipboard. Trilium stores the token hashed and this is the last time you see it.",
+    "token_created_message": "Copy the created token into clipboard. AllCodex stores the token hashed and this is the last time you see it.",
     "rename_token": "Rename this token",
     "delete_token": "Delete / deactivate this token",
     "rename_token_title": "Rename token",
@@ -1551,7 +1551,7 @@
     "set_password_heading": "Set Password",
     "set_password": "Set Password",
     "password_mismatch": "New passwords are not the same.",
-    "password_changed_success": "Password has been changed. Trilium will be reloaded after you press OK."
+    "password_changed_success": "Password has been changed. AllCodex will be reloaded after you press OK."
   },
   "multi_factor_authentication": {
     "title": "Multi-Factor Authentication",
@@ -1955,7 +1955,7 @@
     "copy-link": "Copy link",
     "paste": "Paste",
     "paste-as-plain-text": "Paste as plain text",
-    "search_in_trilium": "Search for \"{{term}}\" in Trilium",
+    "search_in_trilium": "Search for \"{{term}}\" in AllCodex",
     "search_online": "Search for \"{{term}}\" with {{searchEngine}}"
   },
   "image_context_menu": {
@@ -2066,9 +2066,9 @@
   },
   "cpu_arch_warning": {
     "title": "Please download the ARM64 version",
-    "message_macos": "TriliumNext is currently running under Rosetta 2 translation, which means you're using the Intel (x64) version on Apple Silicon Mac. This will significantly impact performance and battery life.",
-    "message_windows": "TriliumNext is currently running emulation, which means you're using the Intel (x64) version on a Windows on ARM device. This will significantly impact performance and battery life.",
-    "recommendation": "For the best experience, please download the native ARM64 version of TriliumNext from our releases page.",
+    "message_macos": "AllCodex is currently running under Rosetta 2 translation, which means you're using the Intel (x64) version on Apple Silicon Mac. This will significantly impact performance and battery life.",
+    "message_windows": "AllCodex is currently running emulation, which means you're using the Intel (x64) version on a Windows on ARM device. This will significantly impact performance and battery life.",
+    "recommendation": "For the best experience, please download the native ARM64 version of AllCodex from our releases page.",
     "download_link": "Download Native Version",
     "continue_anyway": "Continue Anyway",
     "dont_show_again": "Don't show this warning again"
@@ -2165,14 +2165,14 @@
     "help_title": "Display more information about this screen"
   },
   "call_to_action": {
-    "next_theme_title": "Try the new Trilium theme",
+    "next_theme_title": "Try the new AllCodex theme",
     "next_theme_message": "You are currently using the legacy theme, would you like to try the new theme?",
     "next_theme_button": "Try the new theme",
     "background_effects_title": "Background effects are now stable",
     "background_effects_message": "On Windows and macOS devices, background effects are now stable. The background effects adds a touch of color to the user interface by blurring the background behind it.",
     "background_effects_button": "Enable background effects",
     "new_layout_title": "New layout",
-    "new_layout_message": "We’ve introduced a modernized layout for Trilium. The ribbon has been removed and seamlessly integrated into the main interface, with a new status bar and expandable sections (such as promoted attributes) taking over key functions.\n\nThe new layout is enabled by default, and can be temporarily disabled via Options → Appearance.",
+    "new_layout_message": "We’ve introduced a modernized layout for AllCodex. The ribbon has been removed and seamlessly integrated into the main interface, with a new status bar and expandable sections (such as promoted attributes) taking over key functions.\n\nThe new layout is enabled by default, and can be temporarily disabled via Options → Appearance.",
     "new_layout_button": "More info",
     "dismiss": "Dismiss"
   },

@@ -15,15 +15,9 @@ import { getDbSize } from "./services/sql_init.js";
 
 const MINIMUM_NODE_VERSION = "20.0.0";
 
-const LOGO = `\
- _____     _ _ _
-|_   _| __(_) (_)_   _ _ __ ___   | \\ | | ___ | |_ ___  ___
-  | || '__| | | | | | | '_ \` _ \\  |  \\| |/ _ \\| __/ _ \\/ __|
-  | || |  | | | | |_| | | | | | | | |\\  | (_) | ||  __/\\__ \\
-  |_||_|  |_|_|_|\\__,_|_| |_| |_| |_| \\_|\\___/ \\__\\___||___/ [version]
-`;
+const LOGO = ('\n' +'    _    _ _  _____         _\n' +'   /_ \\  | | |/ __|___   __| |_____ __\n' +'  / _ \\ | | | (__/ _ \\ / _.-| -_) \\ /\n' +' /_/ \_\\|_|_|\\___\\___/ \\__,_|___|/_\_\\\n');
 
-export default async function startTriliumServer() {
+export default async function startAllCodexServer() {
     await displayStartupMessage();
 
     // setup basic error handling even before requiring dependencies, since those can produce errors as well
@@ -45,7 +39,7 @@ export default async function startTriliumServer() {
 
     if (utils.compareVersions(process.versions.node, MINIMUM_NODE_VERSION) < 0) {
         console.error();
-        console.error(`The Trilium server requires Node.js ${MINIMUM_NODE_VERSION} and later in order to start.\n`);
+        console.error(`The AllCodex server requires Node.js ${MINIMUM_NODE_VERSION} and later in order to start.\n`);
         console.error(`\tCurrent version:\t${process.versions.node}`);
         console.error(`\tExpected version:\t${MINIMUM_NODE_VERSION}`);
         console.error();
@@ -145,7 +139,7 @@ function startHttpServer(app: Express) {
                     message = `Port ${port} requires elevated privileges. It's recommended to use port above 1024.`;
                     break;
                 case "EADDRINUSE":
-                    message = `Port ${port} is already in use. Most likely, another Trilium process is already running. You might try to find it, kill it, and try again.`;
+                    message = `Port ${port} is already in use. Most likely, another AllCodex process is already running. You might try to find it, kill it, and try again.`;
                     break;
                 case "EADDRNOTAVAIL":
                     message = `Unable to start the server on host '${host}'. Make sure the host (defined in 'config.ini' or via the 'TRILIUM_HOST' environment variable) is an IP address that can be listened on.`;
