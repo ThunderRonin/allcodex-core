@@ -1,161 +1,158 @@
 # AllCodex
 
-**AI-powered worldbuilding knowledge base** — a self-hosted lore management system for writers, game masters, and world builders.
+Self-hosted lore database for worldbuilding. A server-only fork of [TriliumNext/Trilium](https://github.com/TriliumNext/Trilium), stripped down to its core and rebuilt for writers, game masters, and world builders.
 
-AllCodex is a fork of [TriliumNext/Trilium](https://github.com/TriliumNext/Trilium), stripped to its server core and extended with a purpose-built grimoire portal frontend and an AI orchestration layer.
+AllCodex stores your worldbuilding notes in SQLite and serves them over a REST API (ETAPI). It handles lore templates, GM-only secrets, world variable expansion, and public sharing out of the box.
 
----
+## Ecosystem
 
-## Architecture
+AllCodex is one piece of the AllKnower stack:
 
-```
-AllCodex (this repo)
-├── apps/server/        — AllCodex server (Node.js + SQLite, ETAPI)
-├── apps/portal/        — Grimoire portal frontend (Next.js, Bun, Tailwind v4)
-├── apps/server-e2e/    — End-to-end tests
-├── packages/commons/   — Shared types and utilities
-├── packages/share-theme/    — Public note sharing theme
-├── packages/pdfjs-viewer/   — PDF viewer for shared notes
-└── packages/highlightjs/    — Syntax highlighting
-```
+| Service | Role | Repo |
+|---------|------|------|
+| **AllCodex** (this repo) | Lore database server, ETAPI, share pages | [ThunderRonin/AllCodex](https://github.com/ThunderRonin/AllCodex) |
+| **AllCodex-Portal** | Web frontend for browsing and editing lore | [ThunderRonin/AllCodex-Portal](https://github.com/ThunderRonin/AllCodex-Portal) |
+| **AllKnower** | AI orchestrator: brain dump, consistency checks, relationship discovery | separate repo |
 
-The **server** (`apps/server`) is the data backbone — it stores all lore notes in SQLite and exposes them via [ETAPI](apps/server/etapi.openapi.yaml) (a REST API).
+AllKnower calls AllCodex. The Portal calls AllCodex. AllCodex just serves data.
 
-The **portal** (`apps/portal`) is a standalone Next.js app that communicates exclusively with the server through ETAPI and the AllKnower AI service. It provides a World Anvil-style interface for browsing, writing, and enriching lore with AI.
+## Features
 
-The **AllKnower** service (separate repo) provides the AI layer: RAG-based semantic search, brain dump → structured notes, lore consistency checking, relationship suggestion, and gap detection.
+- **8 lore templates** with promoted attributes: Character, Location, Faction, Creature, Event, Timeline, Manuscript, Statblock
+- **GM-only secrets**: tag notes with `#gmOnly` or wrap HTML sections in `class="gm-only"` to hide them from shared pages
+- **World variables**: write `{{currency}}` in a note and it expands to the value stored in your `#worldVariables` JSON note
+- **Public sharing**: render any subtree as a public website at `/share/`
+- **Full REST API** with interactive docs at `/docs` (Scalar) and a JSON spec at `/etapi/openapi.json`
+- **Search**: query by attributes, labels, note content, or any combination (`#loreType=character #status=alive`)
+- **Note relationships**: parent/child branches + typed relation attributes between notes
+- **Revision history**: every edit is versioned
+- **Encryption**: per-note protection with password-gated sessions
 
----
-
-## Getting Started
+## Quick Start
 
 ### Requirements
-- [pnpm](https://pnpm.io/) ≥ 10 (server + packages)
-- [Bun](https://bun.sh/) ≥ 1.3 (portal)
-- Node.js ≥ 20
+- Node.js 20+
+- pnpm 10+
 
-### Install dependencies
+### Install and run
 ```bash
+git clone https://github.com/ThunderRonin/AllCodex.git
+cd AllCodex
 pnpm install
-```
-
-### Run the server
-```bash
 pnpm server:start
-# AllCodex server available at http://localhost:8080
-# ETAPI available at http://localhost:8080/etapi/
 ```
 
-### Run the portal
+Server starts at `http://localhost:8080`. API docs at `http://localhost:8080/docs`.
+
+### Docker
 ```bash
-cd apps/portal
-bun run dev
-# Portal available at http://localhost:3000
+docker compose up -d
 ```
 
-### Build for production
+Or build the image yourself:
 ```bash
-pnpm server:build                     # builds the server
-cd apps/portal && bun run build       # builds the portal
+docker build -t allcodex -f apps/server/Dockerfile .
+docker run -p 8080:8080 -v allcodex-data:/home/node/allcodex-data allcodex
 ```
 
----
+### Create an ETAPI token
 
-## Portal Configuration
+After first launch, set your password at `http://localhost:8080`. Then create an API token via the options page or the internal API. The Portal and AllKnower need this token to talk to AllCodex.
 
-Copy `apps/portal/.env.example` to `apps/portal/.env.local` and fill in your values:
+## API
 
-```env
-ALLCODEX_URL=http://localhost:8080
-ALLCODEX_ETAPI_TOKEN=your_etapi_token_here
+Interactive reference: [http://localhost:8080/docs](http://localhost:8080/docs)
 
-ALLKNOWER_URL=http://localhost:3001
-ALLKNOWER_BEARER_TOKEN=your_allknower_token_here
-```
+OpenAPI spec (JSON): `GET /etapi/openapi.json`
+OpenAPI spec (YAML): `GET /etapi/etapi.openapi.yaml`
 
-Your ETAPI token can be found/generated in AllCodex server settings.
+Common endpoints:
 
----
-
-## Portal Features
-
-| Page | Description |
-|---|---|
-| **Dashboard** | Stat overview, recent entries, system status |
-| **Lore Browser** | Filterable grid of all lore entries by type |
-| **Lore Detail** | Wiki-style two-column view with attributes and relations |
-| **Search** | Dual-mode: semantic AI search (RAG) or attribute lookup |
-| **Brain Dump** | Paste raw notes → AllKnower structures them into lore entries |
-| **Consistency** | AI scans lore for contradictions and inconsistencies |
-| **Relationships** | Paste text → AI suggests connections to existing entries |
-| **Gap Detector** | AI identifies underdeveloped areas in your world |
-
----
-
-## Server (ETAPI)
-
-The server's REST API is documented in [`apps/server/etapi.openapi.yaml`](apps/server/etapi.openapi.yaml).
-
-Key endpoints used by the portal:
-
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/etapi/notes?search=...` | Search notes |
+| Method | Path | What it does |
+|--------|------|--------------|
+| `GET` | `/etapi/notes?search=...` | Search notes by query |
 | `GET` | `/etapi/notes/:id` | Get note metadata |
-| `GET` | `/etapi/notes/:id/content` | Get note HTML content |
-| `POST` | `/etapi/create-note` | Create a new note |
+| `GET` | `/etapi/notes/:id/content` | Get note body (HTML) |
+| `POST` | `/etapi/create-note` | Create a note |
 | `PATCH` | `/etapi/notes/:id` | Update note metadata |
-| `PUT` | `/etapi/notes/:id/content` | Update note content |
-| `DELETE` | `/etapi/notes/:id` | Delete a note |
+| `PUT` | `/etapi/notes/:id/content` | Update note body |
+| `DELETE` | `/etapi/notes/:id` | Soft-delete a note |
+| `POST` | `/etapi/attributes` | Add a label or relation |
 | `GET` | `/etapi/app-info` | Server version info |
 
----
+All endpoints require `Authorization: <token>` header except `/docs`, `/etapi/openapi.json`, and `/etapi/etapi.openapi.yaml`.
 
 ## Lore Taxonomy
 
-Lore entries are standard AllCodex notes tagged with attributes:
+Lore entries are standard notes with attributes that categorize them:
 
 ```
-#lore                        — marks a note as a lore entry
-#loreType=character          — character entries
-#loreType=location           — locations
-#loreType=faction            — factions / organisations
-#loreType=creature           — creatures / monsters
-#loreType=event              — historical events
-#loreType=manuscript         — in-world documents
+#loreType=character       characters and NPCs
+#loreType=location        places, regions, landmarks
+#loreType=faction         organizations, states, religions
+#loreType=creature        monsters and beasts
+#loreType=event           historical events
+#loreType=timeline        chronologies (book-type notes)
+#loreType=manuscript      in-world documents
+#loreType=statblock       D&D 5e stat blocks
 ```
 
-The portal's lore browser and search use these attributes for filtering.
+Each type has a built-in template with promoted attributes (structured fields like "Race", "Population", "Danger Level", etc.) that appear as metadata on the note.
 
----
+## Project Structure
+
+```
+apps/
+  server/              Express 5 + SQLite server
+  server-e2e/          Playwright end-to-end tests
+  build-docs/          TypeDoc generation
+  db-compare/          DB comparison tool
+  dump-db/             DB dump tool
+  icon-pack-builder/   Icon pack generation
+
+packages/
+  commons/             Shared types and utilities
+  share-theme/         CSS + templates for /share/ pages
+  highlightjs/         Syntax highlighting
+  pdfjs-viewer/        PDF viewer for shared notes
+  express-partial-content/   Range request support
+  turndown-plugin-gfm/      Markdown conversion
+```
 
 ## Development
 
-### Testing
 ```bash
-pnpm server:test        # server unit tests
-pnpm test:all           # all tests
+pnpm server:start         # dev server with hot reload
+pnpm server:build         # production build
+pnpm test:all             # run all tests
+pnpm typecheck            # TypeScript check
+pnpm dev:linter-check     # ESLint
 ```
 
-### Type checking
-```bash
-pnpm typecheck
-```
+## Contributing
 
-### Linting
-```bash
-pnpm dev:linter-check
-pnpm dev:format-check
-```
+Contributions are welcome. If you're interested in working on AllCodex, here's how to get started:
 
----
+1. Fork the repo and clone it locally
+2. Run `pnpm install` to set up the monorepo
+3. Start the dev server with `pnpm server:start`
+4. Make your changes on a feature branch
+5. Run `pnpm test:all && pnpm typecheck` before opening a PR
+
+A few things to keep in mind:
+
+- **Keep PRs focused.** One feature or fix per pull request. Avoid drive-by refactors in unrelated files.
+- **Test your changes.** If you're touching ETAPI endpoints or the share renderer, write or update tests.
+- **Don't break existing APIs.** ETAPI is consumed by the Portal and AllKnower. Changing endpoint signatures or response shapes needs discussion first.
+- **Templates go in `hidden_subtree_templates.ts`.** If you want to add a new lore type or modify an existing one, that's the file.
+- **Share page styling lives in `packages/share-theme/`.** CSS changes for `/share/` go there, not in the server code.
+
+If you're not sure where to start, look for issues tagged `good first issue`, or open a discussion with your idea before writing code.
 
 ## Upstream
 
-AllCodex is a fork of [TriliumNext/Trilium](https://github.com/TriliumNext/Trilium), which is itself a community fork of [zadam/trilium](https://github.com/zadam/trilium). The original client, desktop (Electron), and web-clipper applications have been removed; the server and data model remain intact.
-
----
+Forked from [TriliumNext/Trilium](https://github.com/TriliumNext/Trilium) (which itself continues [zadam/trilium](https://github.com/zadam/trilium)). The original client, desktop, and web-clipper apps have been removed. The server, data model, and ETAPI remain intact.
 
 ## License
 
-AGPL-3.0-only — see [LICENSE](LICENSE).
+AGPL-3.0-only. See [LICENSE](LICENSE).
