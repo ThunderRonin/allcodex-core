@@ -55,9 +55,27 @@ docker build -t allcodex -f apps/server/Dockerfile .
 docker run -p 8080:8080 -v allcodex-data:/home/node/allcodex-data allcodex
 ```
 
+### Initialize the app
+
+On first launch the database has no password set. Initialize it with a single `POST /set-password` request before doing anything else:
+
+```bash
+curl -X POST http://localhost:8080/set-password \
+  -H "Content-Type: application/json" \
+  -d '{"password1": "yourpassword", "password2": "yourpassword"}'
+```
+
+Expected response:
+
+```json
+{"success": true, "redirect": "login"}
+```
+
+Once the password is set, any subsequent call to `POST /set-password` returns `400 Bad Request`. To change the password later use `POST /api/password/change` with `current_password` and `new_password` fields.
+
 ### Create an ETAPI token
 
-After first launch, set your password at `http://localhost:8080`. Then create an API token via the options page or the internal API. The Portal and AllKnower need this token to talk to AllCodex.
+After initializing, create an API token via the options page at `http://localhost:8080` or via the internal API. The Portal and AllKnower need this token to talk to AllCodex.
 
 ## API
 
