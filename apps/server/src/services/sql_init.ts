@@ -2,7 +2,6 @@ import log from "./log.js";
 import fs from "fs";
 import resourceDir from "./resource_dir.js";
 import sql from "./sql.js";
-import { isElectron } from "./utils.js";
 import optionService from "./options.js";
 import port from "./port.js";
 import BOption from "../becca/entities/boption.js";
@@ -39,11 +38,7 @@ function isDbInitialized() {
 
 async function initDbConnection() {
     if (!isDbInitialized()) {
-        if (isElectron) {
-            log.info(t("sql_init.db_not_initialized_desktop"));
-        } else {
-            log.info(t("sql_init.db_not_initialized_server", { port }));
-        }
+        log.info(t("sql_init.db_not_initialized_server", { port }));
 
         return;
     }

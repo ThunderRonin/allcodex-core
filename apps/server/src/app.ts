@@ -3,7 +3,6 @@ import "./becca/becca_loader.js";
 
 import compression from "compression";
 import cookieParser from "cookie-parser";
-import ejs from "ejs";
 import express from "express";
 import { auth } from "express-openid-connect";
 import helmet from "helmet";
@@ -21,7 +20,7 @@ import log from "./services/log.js";
 import openID from "./services/open_id.js";
 import { RESOURCE_DIR } from "./services/resource_dir.js";
 import sql_init from "./services/sql_init.js";
-import utils, { getResourceDir, isDev } from "./services/utils.js";
+import { getResourceDir, isDev } from "./services/utils.js";
 
 export default async function buildApp() {
     const app = express();
@@ -32,11 +31,6 @@ export default async function buildApp() {
     const publicDir = isDev ? path.join(getResourceDir(), "../dist/public") : path.join(getResourceDir(), "public");
     const publicAssetsDir = path.join(publicDir, "assets");
     const assetsDir = RESOURCE_DIR;
-
-    // view engine setup
-    app.set("views", path.join(assetsDir, "views"));
-    app.engine("ejs", (filePath, options, callback) => ejs.renderFile(filePath, options, callback));
-    app.set("view engine", "ejs");
 
     app.use((req, res, next) => {
         // set CORS header
@@ -54,9 +48,7 @@ export default async function buildApp() {
         return next();
     });
 
-    if (!utils.isElectron) {
-        app.use(compression()); // HTTP compression
-    }
+    app.use(compression()); // HTTP compression
 
     let resourcePolicy = config["Network"]["corsResourcePolicy"] as 'same-origin' | 'same-site' | 'cross-origin' | undefined;
     if(resourcePolicy !== 'same-origin' && resourcePolicy !== 'same-site' && resourcePolicy !== 'cross-origin') {
@@ -66,7 +58,7 @@ export default async function buildApp() {
 
     app.use(
         helmet({
-            hidePoweredBy: false, // errors out in electron
+            hidePoweredBy: true,
             contentSecurityPolicy: false,
             crossOriginResourcePolicy: {
                 policy: resourcePolicy
@@ -110,10 +102,6 @@ export default async function buildApp() {
     await import("./services/scheduler.js");
 
     startScheduledCleanup();
-
-    if (utils.isElectron) {
-        (await import("@electron/remote/main/index.js")).initialize();
-    }
 
     return app;
 }

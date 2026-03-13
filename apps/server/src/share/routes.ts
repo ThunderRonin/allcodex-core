@@ -8,7 +8,7 @@ import searchService from "../services/search/services/search.js";
 import SearchContext from "../services/search/search_context.js";
 import type SNote from "./shaca/entities/snote.js";
 import type SAttachment from "./shaca/entities/sattachment.js";
-import { getDefaultTemplatePath, renderNoteContent } from "./content_renderer.js";
+import { getContent } from "./content_renderer.js";
 import utils from "../services/utils.js";
 
 function addNoIndexHeader(note: SNote, res: Response) {
@@ -109,9 +109,7 @@ function renderImageAttachment(image: SNote, res: Response, attachmentName: stri
 }
 
 function render404(res: Response) {
-    res.status(404);
-    const shareThemePath = getDefaultTemplatePath("404");
-    res.render(shareThemePath);
+    res.status(404).json({ message: "Not found" });
 }
 
 function register(router: Router) {
@@ -134,11 +132,11 @@ function register(router: Router) {
 
         if (note.isLabelTruthy("shareRaw") || typeof req.query.raw !== "undefined") {
             res.setHeader("Content-Type", note.mime).send(note.getContent());
-
             return;
         }
 
-        res.send(renderNoteContent(note));
+        const { content, header } = getContent(note);
+        res.json({ noteId: note.noteId, title: note.title, type: note.type, mime: note.mime, header, content });
     }
 
     router.get("/share/", (req, res) => {

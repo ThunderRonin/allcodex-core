@@ -24,7 +24,6 @@
       system:
       let
         pkgs = import nixpkgs { inherit system; };
-        electron = pkgs."electron_${lib.versions.major packageJsonDesktop.devDependencies.electron}";
         nodejs = pkgs.nodejs_24;
         # pnpm creates an overly long PATH env variable for child processes.
         # This patch deduplicates entries in PATH, which results in an equivalent but shorter entry.
@@ -68,7 +67,7 @@
             src = src;
           };
         packageJson = builtins.fromJSON (builtins.readFile ./package.json);
-        packageJsonDesktop = builtins.fromJSON (builtins.readFile ./apps/desktop/package.json);
+        packageJson = builtins.fromJSON (builtins.readFile ./package.json);
 
         makeApp =
           {
@@ -115,17 +114,6 @@
                 nodejs.python
                 removeReferencesTo                
               ]
-              ++ lib.optionals (app == "desktop" || app == "edit-docs") [
-                copyDesktopItems
-                # required for NIXOS_OZONE_WL expansion
-                # https://github.com/NixOS/nixpkgs/issues/172583
-                makeShellWrapper
-                wrapGAppsHook3
-
-                # For determining the Electron version to rebuild for:
-                which
-                electron
-              ]
               ++ lib.optionals (app == "server") [
                 makeBinaryWrapper
               ]
@@ -157,71 +145,17 @@
             '';
 
             components = [
-              "packages/ckeditor5"
-              "packages/ckeditor5-admonition"
-              "packages/ckeditor5-footnotes"
-              "packages/ckeditor5-keyboard-marker"
-              "packages/ckeditor5-math"
-              "packages/ckeditor5-mermaid"
               "packages/codemirror"
               "packages/commons"
               "packages/express-partial-content"
-              "packages/highlightjs"
               "packages/turndown-plugin-gfm"
 
-              "apps/client"
               "apps/db-compare"
-              "apps/desktop"
               "apps/dump-db"
-              "apps/edit-docs"
               "apps/server"
               "apps/server-e2e"
             ];
 
-            desktopItems = lib.optionals (app == "desktop") [
-              (makeDesktopItem {
-                name = "Trilium Notes";
-                exec = meta.mainProgram;
-                icon = "trilium";
-                comment = meta.description;
-                desktopName = "Trilium Notes";
-                categories = [ "Office" ];
-                startupWMClass = "Trilium Notes";
-              })
-            ];
-
-            meta = {
-              description = "Trilium: ${app}";
-              inherit mainProgram;
-            };
-          };
-
-        desktop = makeApp {
-          app = "desktop";
-          # pnpm throws an error at the end of `pnpm postinstall`, but it doesn't seem to matter:
-          # ENOENT: no such file or directory, lstat
-          # '/build/source/apps/desktop/node_modules/better-sqlite3/build/node_gyp_bins'
-          preBuildCommands = ''
-            export npm_config_nodedir=${electron.headers}
-            pnpm postinstall
-          '';
-          buildTask = "desktop:build";
-          mainProgram = "trilium";
-          installCommands = ''
-            #remove-references-to -t ${electron.headers} apps/desktop/dist/node_modules/better-sqlite3/build/config.gypi
-            #remove-references-to -t ${nodejs.python} apps/desktop/dist/node_modules/better-sqlite3/build/config.gypi
-
-            mkdir -p $out/{bin,share/icons/hicolor/512x512/apps,opt/trilium}
-            cp --archive apps/desktop/dist/* $out/opt/trilium
-            cp apps/client/src/assets/icon.png $out/share/icons/hicolor/512x512/apps/trilium.png
-            makeShellWrapper ${lib.getExe electron} $out/bin/trilium \
-              "''${gappsWrapperArgs[@]}" \
-              --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}" \
-              --set-default ELECTRON_IS_DEV 0 \
-              --set TRILIUM_RESOURCE_DIR $out/opt/trilium \
-              --add-flags $out/opt/trilium/main.cjs
-          '';
-        };
 
         server = makeApp {
           app = "server";
@@ -256,34 +190,12 @@
           '';
         };
 
-        edit-docs = makeApp {
-          app = "edit-docs";
-          preBuildCommands = ''
-            export npm_config_nodedir=${electron.headers}
-            pnpm postinstall
-          '';
-          buildTask = "edit-docs:build";
-          mainProgram = "trilium-edit-docs";
-          installCommands = ''
-            #remove-references-to -t ${electron.headers} apps/edit-docs/dist/node_modules/better-sqlite3/build/config.gypi
-            #remove-references-to -t ${nodejs.python} apps/edit-docs/dist/node_modules/better-sqlite3/build/config.gypi
-
-            mkdir -p $out/{bin,opt/trilium-edit-docs}
-            cp --archive apps/edit-docs/dist/* $out/opt/trilium-edit-docs
-            makeShellWrapper ${lib.getExe electron} $out/bin/trilium-edit-docs \
-              --set-default ELECTRON_IS_DEV 0 \
-              --set TRILIUM_RESOURCE_DIR $out/opt/trilium-edit-docs \
-              --add-flags $out/opt/trilium-edit-docs/edit-docs.cjs
-          '';
-        };
 
       in
       {
-        packages.desktop = desktop;
         packages.server = server;
-        packages.edit-docs = edit-docs;
 
-        packages.default = desktop;
+        packages.default = server;
 
         devShells.default = pkgs.mkShell {
           buildInputs = [

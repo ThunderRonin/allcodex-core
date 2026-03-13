@@ -15,7 +15,6 @@ import etapiSpecialNoteRoutes from "../etapi/special_notes.js";
 import etapiRevisionsRoutes from "../etapi/revisions.js";
 import auth from "../services/auth.js";
 import openID from '../services/open_id.js';
-import { isElectron } from "../services/utils.js";
 import shareRoutes from "../share/routes.js";
 import anthropicRoute from "./api/anthropic.js";
 import appInfoRoute from "./api/app_info.js";
@@ -126,21 +125,21 @@ function register(app: express.Application) {
     apiRoute(PUT, "/api/notes/:noteId/toggle-in-parent/:parentNoteId/:present", cloningApiRoute.toggleNoteInParent);
     apiRoute(PUT, "/api/notes/:noteId/clone-to-note/:parentNoteId", cloningApiRoute.cloneNoteToParentNote);
     apiRoute(PUT, "/api/notes/:noteId/clone-after/:afterBranchId", cloningApiRoute.cloneNoteAfter);
-    route(PUT, "/api/notes/:noteId/file", [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware], filesRoute.updateFile, apiResultHandler);
-    route(GET, "/api/notes/:noteId/open", [auth.checkApiAuthOrElectron], filesRoute.openFile);
+    route(PUT, "/api/notes/:noteId/file", [auth.checkApiAuth, uploadMiddlewareWithErrorHandling, csrfMiddleware], filesRoute.updateFile, apiResultHandler);
+    route(GET, "/api/notes/:noteId/open", [auth.checkApiAuth], filesRoute.openFile);
     asyncRoute(
         GET,
         "/api/notes/:noteId/open-partial",
-        [auth.checkApiAuthOrElectron],
+        [auth.checkApiAuth],
         createPartialContentHandler(filesRoute.fileContentProvider, {
             debug: (string, extra) => {
                 console.log(string, extra);
             }
         })
     );
-    route(GET, "/api/notes/:noteId/download", [auth.checkApiAuthOrElectron], filesRoute.downloadFile);
+    route(GET, "/api/notes/:noteId/download", [auth.checkApiAuth], filesRoute.downloadFile);
     // this "hacky" path is used for easier referencing of CSS resources
-    route(GET, "/api/notes/download/:noteId", [auth.checkApiAuthOrElectron], filesRoute.downloadFile);
+    route(GET, "/api/notes/download/:noteId", [auth.checkApiAuth], filesRoute.downloadFile);
     apiRoute(PST, "/api/notes/:noteId/save-to-tmp-dir", filesRoute.saveNoteToTmpDir);
     apiRoute(PST, "/api/notes/:noteId/upload-modified-file", filesRoute.uploadModifiedFileToNote);
     apiRoute(PST, "/api/notes/:noteId/convert-to-attachment", notesApiRoute.convertNoteToAttachment);
@@ -156,31 +155,31 @@ function register(app: express.Application) {
 
     apiRoute(GET, "/api/notes/:noteId/attachments", attachmentsApiRoute.getAttachments);
     apiRoute(PST, "/api/notes/:noteId/attachments", attachmentsApiRoute.saveAttachment);
-    route(PST, "/api/notes/:noteId/attachments/upload", [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware], attachmentsApiRoute.uploadAttachment, apiResultHandler);
+    route(PST, "/api/notes/:noteId/attachments/upload", [auth.checkApiAuth, uploadMiddlewareWithErrorHandling, csrfMiddleware], attachmentsApiRoute.uploadAttachment, apiResultHandler);
     apiRoute(GET, "/api/attachments/:attachmentId", attachmentsApiRoute.getAttachment);
     apiRoute(GET, "/api/attachments/:attachmentId/all", attachmentsApiRoute.getAllAttachments);
     apiRoute(PST, "/api/attachments/:attachmentId/convert-to-note", attachmentsApiRoute.convertAttachmentToNote);
     apiRoute(DEL, "/api/attachments/:attachmentId", attachmentsApiRoute.deleteAttachment);
     apiRoute(PUT, "/api/attachments/:attachmentId/rename", attachmentsApiRoute.renameAttachment);
     apiRoute(GET, "/api/attachments/:attachmentId/blob", attachmentsApiRoute.getAttachmentBlob);
-    route(GET, "/api/attachments/:attachmentId/image/:filename", [auth.checkApiAuthOrElectron], imageRoute.returnAttachedImage);
-    route(GET, "/api/attachments/:attachmentId/open", [auth.checkApiAuthOrElectron], filesRoute.openAttachment);
+    route(GET, "/api/attachments/:attachmentId/image/:filename", [auth.checkApiAuth], imageRoute.returnAttachedImage);
+    route(GET, "/api/attachments/:attachmentId/open", [auth.checkApiAuth], filesRoute.openAttachment);
     asyncRoute(
         GET,
         "/api/attachments/:attachmentId/open-partial",
-        [auth.checkApiAuthOrElectron],
+        [auth.checkApiAuth],
         createPartialContentHandler(filesRoute.attachmentContentProvider, {
             debug: (string, extra) => {
                 console.log(string, extra);
             }
         })
     );
-    route(GET, "/api/attachments/:attachmentId/download", [auth.checkApiAuthOrElectron], filesRoute.downloadAttachment);
+    route(GET, "/api/attachments/:attachmentId/download", [auth.checkApiAuth], filesRoute.downloadAttachment);
     // this "hacky" path is used for easier referencing of CSS resources
-    route(GET, "/api/attachments/download/:attachmentId", [auth.checkApiAuthOrElectron], filesRoute.downloadAttachment);
+    route(GET, "/api/attachments/download/:attachmentId", [auth.checkApiAuth], filesRoute.downloadAttachment);
     apiRoute(PST, "/api/attachments/:attachmentId/save-to-tmp-dir", filesRoute.saveAttachmentToTmpDir);
     apiRoute(PST, "/api/attachments/:attachmentId/upload-modified-file", filesRoute.uploadModifiedFileToAttachment);
-    route(PUT, "/api/attachments/:attachmentId/file", [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware], filesRoute.updateAttachment, apiResultHandler);
+    route(PUT, "/api/attachments/:attachmentId/file", [auth.checkApiAuth, uploadMiddlewareWithErrorHandling, csrfMiddleware], filesRoute.updateAttachment, apiResultHandler);
 
     apiRoute(GET, "/api/notes/:noteId/revisions", revisionsApiRoute.getRevisions);
     apiRoute(DEL, "/api/notes/:noteId/revisions", revisionsApiRoute.eraseAllRevisions);
@@ -189,13 +188,13 @@ function register(app: express.Application) {
     apiRoute(GET, "/api/revisions/:revisionId/blob", revisionsApiRoute.getRevisionBlob);
     apiRoute(DEL, "/api/revisions/:revisionId", revisionsApiRoute.eraseRevision);
     apiRoute(PST, "/api/revisions/:revisionId/restore", revisionsApiRoute.restoreRevision);
-    route(GET, "/api/revisions/:revisionId/image/:filename", [auth.checkApiAuthOrElectron], imageRoute.returnImageFromRevision);
+    route(GET, "/api/revisions/:revisionId/image/:filename", [auth.checkApiAuth], imageRoute.returnImageFromRevision);
 
-    route(GET, "/api/revisions/:revisionId/download", [auth.checkApiAuthOrElectron], revisionsApiRoute.downloadRevision);
+    route(GET, "/api/revisions/:revisionId/download", [auth.checkApiAuth], revisionsApiRoute.downloadRevision);
 
-    route(GET, "/api/branches/:branchId/export/:type/:format/:version/:taskId", [auth.checkApiAuthOrElectron], exportRoute.exportBranch);
-    asyncRoute(PST, "/api/notes/:parentNoteId/notes-import", [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware], importRoute.importNotesToBranch, apiResultHandler);
-    route(PST, "/api/notes/:parentNoteId/attachments-import", [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware], importRoute.importAttachmentsToNote, apiResultHandler);
+    route(GET, "/api/branches/:branchId/export/:type/:format/:version/:taskId", [auth.checkApiAuth], exportRoute.exportBranch);
+    asyncRoute(PST, "/api/notes/:parentNoteId/notes-import", [auth.checkApiAuth, uploadMiddlewareWithErrorHandling, csrfMiddleware], importRoute.importNotesToBranch, apiResultHandler);
+    route(PST, "/api/notes/:parentNoteId/attachments-import", [auth.checkApiAuth, uploadMiddlewareWithErrorHandling, csrfMiddleware], importRoute.importAttachmentsToNote, apiResultHandler);
 
     apiRoute(GET, "/api/notes/:noteId/attributes", attributesRoute.getEffectiveNoteAttributes);
     apiRoute(PST, "/api/notes/:noteId/attributes", attributesRoute.addNoteAttribute);
@@ -209,8 +208,8 @@ function register(app: express.Application) {
     apiRoute(GET, "/api/attribute-values/:attributeName", attributesRoute.getValuesForAttribute);
 
     // :filename is not used by trilium, but instead used for "save as" to assign a human-readable filename
-    route(GET, "/api/images/:noteId/:filename", [auth.checkApiAuthOrElectron], imageRoute.returnImageFromNote);
-    route(PUT, "/api/images/:noteId", [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware], imageRoute.updateImage, apiResultHandler);
+    route(GET, "/api/images/:noteId/:filename", [auth.checkApiAuth], imageRoute.returnImageFromNote);
+    route(PUT, "/api/images/:noteId", [auth.checkApiAuth, uploadMiddlewareWithErrorHandling, csrfMiddleware], imageRoute.updateImage, apiResultHandler);
 
     apiRoute(GET, "/api/options", optionsApiRoute.getOptions);
     // FIXME: possibly change to sending value in the body to avoid host of HTTP server issues with slashes
@@ -274,8 +273,7 @@ function register(app: express.Application) {
     apiRoute(PATCH, "/api/etapi-tokens/:etapiTokenId", etapiTokensApiRoutes.patchToken);
     apiRoute(DEL, "/api/etapi-tokens/:etapiTokenId", etapiTokensApiRoutes.deleteToken);
 
-    // in case of local electron, local calls are allowed unauthenticated, for server they need auth
-    const clipperMiddleware = isElectron ? [] : [auth.checkEtapiToken];
+    const clipperMiddleware = [auth.checkEtapiToken];
 
     route(GET, "/api/clipper/handshake", clipperMiddleware, clipperRoute.handshake, apiResultHandler);
     asyncRoute(PST, "/api/clipper/clippings", clipperMiddleware, clipperRoute.addClipping, apiResultHandler);
@@ -301,21 +299,21 @@ function register(app: express.Application) {
 
     apiRoute(GET, "/api/sql/schema", sqlRoute.getSchema);
     apiRoute(PST, "/api/sql/execute/:noteId", sqlRoute.execute);
-    asyncRoute(PST, "/api/database/anonymize/:type", [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.anonymize, apiResultHandler);
+    asyncRoute(PST, "/api/database/anonymize/:type", [auth.checkApiAuth, csrfMiddleware], databaseRoute.anonymize, apiResultHandler);
     apiRoute(GET, "/api/database/anonymized-databases", databaseRoute.getExistingAnonymizedDatabases);
 
     if (process.env.TRILIUM_INTEGRATION_TEST === "memory") {
-        asyncRoute(PST, "/api/database/rebuild/", [auth.checkApiAuthOrElectron], databaseRoute.rebuildIntegrationTestDatabase, apiResultHandler);
+        asyncRoute(PST, "/api/database/rebuild/", [auth.checkApiAuth], databaseRoute.rebuildIntegrationTestDatabase, apiResultHandler);
     }
 
     // backup requires execution outside of transaction
-    asyncRoute(PST, "/api/database/backup-database", [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.backupDatabase, apiResultHandler);
+    asyncRoute(PST, "/api/database/backup-database", [auth.checkApiAuth, csrfMiddleware], databaseRoute.backupDatabase, apiResultHandler);
     apiRoute(GET, "/api/database/backups", databaseRoute.getExistingBackups);
 
     // VACUUM requires execution outside of transaction
-    asyncRoute(PST, "/api/database/vacuum-database", [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.vacuumDatabase, apiResultHandler);
+    asyncRoute(PST, "/api/database/vacuum-database", [auth.checkApiAuth, csrfMiddleware], databaseRoute.vacuumDatabase, apiResultHandler);
 
-    asyncRoute(PST, "/api/database/find-and-fix-consistency-issues", [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.findAndFixConsistencyIssues, apiResultHandler);
+    asyncRoute(PST, "/api/database/find-and-fix-consistency-issues", [auth.checkApiAuth, csrfMiddleware], databaseRoute.findAndFixConsistencyIssues, apiResultHandler);
 
     apiRoute(GET, "/api/database/check-integrity", databaseRoute.checkIntegrity);
 
@@ -343,7 +341,7 @@ function register(app: express.Application) {
     apiRoute(GET, "/api/stats/note-size/:noteId", statsRoute.getNoteSize);
     apiRoute(GET, "/api/stats/subtree-size/:noteId", statsRoute.getSubtreeSize);
     apiRoute(PST, "/api/delete-notes-preview", notesApiRoute.getDeleteNotesPreview);
-    route(GET, "/api/fonts", [auth.checkApiAuthOrElectron], fontsRoute.getFontCss);
+    route(GET, "/api/fonts", [auth.checkApiAuth], fontsRoute.getFontCss);
     apiRoute(GET, "/api/other/icon-usage", otherRoute.getIconUsage);
     apiRoute(PST, "/api/other/render-markdown", otherRoute.renderMarkdown);
     apiRoute(PST, "/api/other/to-markdown", otherRoute.toMarkdown);

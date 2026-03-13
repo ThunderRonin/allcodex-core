@@ -2,7 +2,7 @@
 
 import optionService from "./options.js";
 import log from "./log.js";
-import { isElectron, isMac } from "./utils.js";
+import { isMac } from "./utils.js";
 import type { ActionKeyboardShortcut, KeyboardShortcut } from "@triliumnext/commons";
 import { t } from "i18next";
 
@@ -282,7 +282,7 @@ function getDefaultKeyboardActions() {
             actionName: "openNewTab",
             friendlyName: t("keyboard_action_names.open-new-tab"),
             iconClass: "bx bx-plus",
-            defaultShortcuts: isElectron ? ["CommandOrControl+T"] : [],
+            defaultShortcuts: [],
             description: t("keyboard_actions.open-new-tab"),
             scope: "window"
         },
@@ -290,7 +290,7 @@ function getDefaultKeyboardActions() {
             actionName: "closeActiveTab",
             friendlyName: t("keyboard_action_names.close-active-tab"),
             iconClass: "bx bx-minus",
-            defaultShortcuts: isElectron ? ["CommandOrControl+W"] : [],
+            defaultShortcuts: [],
             description: t("keyboard_actions.close-active-tab"),
             scope: "window"
         },
@@ -298,8 +298,7 @@ function getDefaultKeyboardActions() {
             actionName: "reopenLastTab",
             friendlyName: t("keyboard_action_names.reopen-last-tab"),
             iconClass: "bx bx-undo",
-            defaultShortcuts: isElectron ? ["CommandOrControl+Shift+T"] : [],
-            isElectronOnly: true,
+            defaultShortcuts: [],
             description: t("keyboard_actions.reopen-last-tab"),
             scope: "window"
         },
@@ -307,7 +306,7 @@ function getDefaultKeyboardActions() {
             actionName: "activateNextTab",
             friendlyName: t("keyboard_action_names.activate-next-tab"),
             iconClass: "bx bx-skip-next",
-            defaultShortcuts: isElectron ? ["CommandOrControl+Tab", "CommandOrControl+PageDown"] : [],
+            defaultShortcuts: [],
             description: t("keyboard_actions.activate-next-tab"),
             scope: "window"
         },
@@ -315,7 +314,7 @@ function getDefaultKeyboardActions() {
             actionName: "activatePreviousTab",
             friendlyName: t("keyboard_action_names.activate-previous-tab"),
             iconClass: "bx bx-skip-previous",
-            defaultShortcuts: isElectron ? ["CommandOrControl+Shift+Tab", "CommandOrControl+PageUp"] : [],
+            defaultShortcuts: [],
             description: t("keyboard_actions.activate-previous-tab"),
             scope: "window"
         },
@@ -332,7 +331,6 @@ function getDefaultKeyboardActions() {
             friendlyName: t("keyboard_action_names.toggle-system-tray-icon"),
             iconClass: "bx bx-show",
             defaultShortcuts: [],
-            isElectronOnly: true,
             description: t("keyboard_actions.toggle-tray"),
             scope: "window"
         },
@@ -757,8 +755,7 @@ function getDefaultKeyboardActions() {
             actionName: "openDevTools",
             friendlyName: t("keyboard_action_names.open-developer-tools"),
             iconClass: "bx bx-bug-alt",
-            defaultShortcuts: isElectron ? ["CommandOrControl+Shift+I"] : [],
-            isElectronOnly: true,
+            defaultShortcuts: [],
             description: t("keyboard_actions.open-dev-tools"),
             scope: "window"
         },
@@ -766,7 +763,7 @@ function getDefaultKeyboardActions() {
             actionName: "findInText",
             friendlyName: t("keyboard_action_names.find-in-text"),
             iconClass: "bx bx-search",
-            defaultShortcuts: isElectron ? ["CommandOrControl+F"] : [],
+            defaultShortcuts: [],
             description: t("keyboard_actions.find-in-text"),
             scope: "window"
         },
@@ -790,8 +787,7 @@ function getDefaultKeyboardActions() {
             actionName: "zoomOut",
             friendlyName: t("keyboard_action_names.zoom-out"),
             iconClass: "bx bx-zoom-out",
-            defaultShortcuts: isElectron ? ["CommandOrControl+-"] : [],
-            isElectronOnly: true,
+            defaultShortcuts: [],
             description: t("keyboard_actions.zoom-out"),
             scope: "window"
         },
@@ -800,8 +796,7 @@ function getDefaultKeyboardActions() {
             friendlyName: t("keyboard_action_names.zoom-in"),
             iconClass: "bx bx-zoom-in",
             description: t("keyboard_actions.zoom-in"),
-            defaultShortcuts: isElectron ? ["CommandOrControl+="] : [],
-            isElectronOnly: true,
+            defaultShortcuts: [],
             scope: "window"
         },
         {
@@ -809,8 +804,7 @@ function getDefaultKeyboardActions() {
             friendlyName: t("keyboard_action_names.reset-zoom-level"),
             iconClass: "bx bx-search-alt",
             description: t("keyboard_actions.reset-zoom-level"),
-            defaultShortcuts: isElectron ? ["CommandOrControl+0"] : [],
-            isElectronOnly: true,
+            defaultShortcuts: [],
             scope: "window"
         },
         {

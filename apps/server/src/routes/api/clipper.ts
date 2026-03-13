@@ -189,20 +189,9 @@ export function processContent(images: Image[], note: BNote, content: string) {
 }
 
 function openNote(req: Request) {
-    if (utils.isElectron) {
-        ws.sendMessageToAllClients({
-            type: "openNote",
-            noteId: req.params.noteId
-        });
-
-        return {
-            result: "ok"
-        };
-    } else {
-        return {
-            result: "open-in-browser"
-        };
-    }
+    return {
+        result: "open-in-browser"
+    };
 }
 
 function handshake() {

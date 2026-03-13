@@ -59,7 +59,7 @@ describe("content_renderer", () => {
             `);
         });
 
-        it("handles syntax highlight for code blocks with escaped syntax", () => {
+        it("passes through code blocks without syntax highlighting", () => {
             const note = buildShareNote({
                 id: "note",
                 content: trimIndentation`\
@@ -80,10 +80,10 @@ describe("content_renderer", () => {
                     Defining the options
                 </h2>
                 <pre>
-                <code class="language-text-x-trilium-auto hljs"><span class="hljs-tag">&lt;<span class="hljs-name">t</span> <span class="hljs-attr">t-name</span>=<span class="hljs-string">&quot;module.SectionWidthOption&quot;</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">BuilderRow</span> <span class="hljs-attr">label.translate</span>=<span class="hljs-string">&quot;Section Width&quot;</span>&gt;</span>
-                <span class="hljs-tag">&lt;/<span class="hljs-name">BuilderRow</span>&gt;</span>
-                <span class="hljs-tag">&lt;/<span class="hljs-name">t</span>&gt;</span></code>
+                <code class="language-text-x-trilium-auto">&lt;t t-name="module.SectionWidthOption"&gt;
+                &lt;BuilderRow label.translate="Section Width"&gt;
+                &lt;/BuilderRow&gt;
+                &lt;/t&gt;</code>
                 </pre>
             `);
         });

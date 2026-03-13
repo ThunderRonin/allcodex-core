@@ -54,10 +54,6 @@ export default async function startAllCodexServer() {
     const sessionParser = (await import("./routes/session_parser.js")).default;
     ws.init(httpServer, sessionParser as any); // TODO: Not sure why session parser is incompatible.
 
-    if (utils.isElectron) {
-        const electronRouting = await import("./routes/electron.js");
-        electronRouting.default(app);
-    }
 }
 
 async function displayStartupMessage() {
@@ -147,22 +143,8 @@ function startHttpServer(app: Express) {
             }
         }
 
-        if (utils.isElectron) {
-            import("electron").then(({ app, dialog }) => {
-                // Not all situations require showing an error dialog. When Trilium is already open,
-                // clicking the shortcut, the software icon, or the taskbar icon, or when creating a new window,
-                // should simply focus on the existing window or open a new one, without displaying an error message.
-                if ("code" in error && error.code === "EADDRINUSE" && (process.argv.includes("--new-window") || !app.requestSingleInstanceLock())) {
-                    console.error(message);
-                } else {
-                    dialog.showErrorBox("Error while initializing the server", message);
-                }
-                process.exit(1);
-            });
-        } else {
-            console.error(message);
-            process.exit(1);
-        }
+        console.error(message);
+        process.exit(1);
     });
 
     httpServer.on("listening", () => {

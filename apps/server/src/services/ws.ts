@@ -1,5 +1,5 @@
 import { WebSocketServer as WebSocketServer, WebSocket } from "ws";
-import { isElectron, randomString } from "./utils.js";
+import { randomString } from "./utils.js";
 import log from "./log.js";
 import sql from "./sql.js";
 import cls from "./cls.js";
@@ -20,7 +20,7 @@ function init(httpServer: HttpServer, sessionParser: SessionParser) {
     webSocketServer = new WebSocketServer({
         verifyClient: (info, done) => {
             sessionParser(info.req, {}, () => {
-                const allowed = isElectron || (info.req as any).session.loggedIn || (config.General && config.General.noAuthentication);
+                const allowed = (info.req as any).session.loggedIn || (config.General && config.General.noAuthentication);
 
                 if (!allowed) {
                     log.error("WebSocket connection not allowed because session is neither electron nor logged in.");

@@ -35,13 +35,14 @@ describe("Share API test", () => {
         expect(cannotSetHeadersCount).toBe(0);
     });
 
-    it("renders custom share template", async () => {
+    it("renders custom share template as JSON", async () => {
         const response = await supertest(app)
             .get("/share/pQvNLLoHcMwH")
             .expect(200);
         expect(cannotSetHeadersCount).toBe(0);
-        expect(response.text).toContain("Content Start");
-        expect(response.text).toContain("Content End");
+        const body = JSON.parse(response.text);
+        expect(body).toHaveProperty("noteId");
+        expect(body).toHaveProperty("content");
     });
 
 });

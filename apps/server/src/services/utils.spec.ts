@@ -470,8 +470,8 @@ describe("#envToBoolean", () => {
 describe.todo("#getResourceDir", () => {});
 
 describe("#isElectron", () => {
-    it("should export a boolean", () => {
-        expect(utils.isElectron).toBeTypeOf("boolean");
+    it("should always be false in headless mode", () => {
+        expect(utils.isElectron).toBe(false);
     });
 });
 

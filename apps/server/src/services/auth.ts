@@ -1,7 +1,6 @@
 import etapiTokenService from "./etapi_tokens.js";
 import log from "./log.js";
 import sqlInit from "./sql_init.js";
-import { isElectron } from "./utils.js";
 import passwordEncryptionService from "./encryption/password_encryption.js";
 import config from "./config.js";
 import passwordService from "./encryption/password.js";
@@ -23,10 +22,10 @@ function checkAuth(req: Request, res: Response, next: NextFunction) {
     const currentSsoStatus = openID.isOpenIDEnabled();
     const lastAuthState = req.session.lastAuthState || { totpEnabled: false, ssoEnabled: false };
 
-    if (isElectron || noAuthentication) {
+    if (noAuthentication) {
         next();
         return;
-    } else if (!req.session.loggedIn && !noAuthentication) {
+    } else if (!req.session.loggedIn) {
         // check redirectBareDomain option first
 
         // cannot use options.getOptionBool currently => it will throw an error on new installations
@@ -70,17 +69,6 @@ export function refreshAuth() {
     noAuthentication = (config.General && config.General.noAuthentication === true);
 }
 
-// for electron things which need network stuff
-//  currently, we're doing that for file upload because handling form data seems to be difficult
-function checkApiAuthOrElectron(req: Request, res: Response, next: NextFunction) {
-    if (!req.session.loggedIn && !isElectron && !noAuthentication) {
-        console.warn(`Missing session with ID '${req.sessionID}'.`);
-        reject(req, res, "Logged in session not found");
-    } else {
-        next();
-    }
-}
-
 function checkApiAuth(req: Request, res: Response, next: NextFunction) {
     if (!req.session.loggedIn && !noAuthentication) {
         console.warn(`Missing session with ID '${req.sessionID}'.`);
@@ -99,7 +87,7 @@ function checkAppInitialized(req: Request, res: Response, next: NextFunction) {
 }
 
 function checkPasswordSet(req: Request, res: Response, next: NextFunction) {
-    if (!isElectron && !passwordService.isPasswordSet()) {
+    if (!passwordService.isPasswordSet()) {
         res.redirect("set-password");
     } else {
         next();
@@ -107,7 +95,7 @@ function checkPasswordSet(req: Request, res: Response, next: NextFunction) {
 }
 
 function checkPasswordNotSet(req: Request, res: Response, next: NextFunction) {
-    if (!isElectron && passwordService.isPasswordSet()) {
+    if (passwordService.isPasswordSet()) {
         res.redirect("login");
     } else {
         next();
@@ -173,7 +161,6 @@ export default {
     checkPasswordSet,
     checkPasswordNotSet,
     checkAppNotInitialized,
-    checkApiAuthOrElectron,
     checkEtapiToken,
     checkCredentials
 };

@@ -4,38 +4,27 @@ import optionService from "../services/options.js";
 import myScryptService from "../services/encryption/my_scrypt.js";
 import log from "../services/log.js";
 import passwordService from "../services/encryption/password.js";
-import assetPath, { assetUrlFragment } from "../services/asset_path.js";
-import appPath from "../services/app_path.js";
 import ValidationError from "../errors/validation_error.js";
 import type { Request, Response } from 'express';
 import totp from '../services/totp.js';
 import recoveryCodeService from '../services/encryption/recovery_codes.js';
 import openID from '../services/open_id.js';
 import openIDEncryption from '../services/encryption/open_id_encryption.js';
-import { getCurrentLocale } from "../services/i18n.js";
 
 function loginPage(req: Request, res: Response) {
-    // Login page is triggered twice. Once here, and another time (see sendLoginError) if the password is failed.
-    res.render('login', {
+    res.json({
         wrongPassword: false,
         wrongTotp: false,
         totpEnabled: totp.isTotpEnabled(),
         ssoEnabled: openID.isOpenIDEnabled(),
         ssoIssuerName: openID.getSSOIssuerName(),
-        ssoIssuerIcon: openID.getSSOIssuerIcon(),
-        assetPath: assetPath,
-        assetPathFragment: assetUrlFragment,
-        appPath: appPath,
-        currentLocale: getCurrentLocale()
+        ssoIssuerIcon: openID.getSSOIssuerIcon()
     });
 }
 
 function setPasswordPage(req: Request, res: Response) {
-    res.render("set_password", {
-        error: false,
-        assetPath,
-        appPath,
-        currentLocale: getCurrentLocale()
+    res.json({
+        error: false
     });
 }
 
@@ -57,18 +46,13 @@ function setPassword(req: Request, res: Response) {
     }
 
     if (error) {
-        res.render("set_password", {
-            error,
-            assetPath,
-            appPath,
-            currentLocale: getCurrentLocale()
-        });
+        res.status(400).json({ error });
         return;
     }
 
     passwordService.setPassword(password1);
 
-    res.redirect("login");
+    res.json({ success: true, redirect: "login" });
 }
 
 /**
@@ -144,7 +128,7 @@ function login(req: Request, res: Response) {
         };
 
         req.session.loggedIn = true;
-        res.redirect('.');
+        res.json({ success: true, redirect: "." });
     });
 }
 
@@ -176,15 +160,11 @@ function sendLoginError(req: Request, res: Response, errorType: 'password' | 'to
         log.info(`WARNING: Wrong password from ${req.ip}, rejecting.`);
     }
 
-    res.status(401).render('login', {
+    res.status(401).json({
         wrongPassword: errorType === 'password',
         wrongTotp: errorType === 'totp',
         totpEnabled: totp.isTotpEnabled(),
-        ssoEnabled: openID.isOpenIDEnabled(),
-        assetPath: assetPath,
-        assetPathFragment: assetUrlFragment,
-        appPath: appPath,
-        currentLocale: getCurrentLocale()
+        ssoEnabled: openID.isOpenIDEnabled()
     });
 }
 
@@ -196,7 +176,7 @@ function logout(req: Request, res: Response) {
             res.oidc.logout({ returnTo: '/' });
         }
 
-        res.redirect('login');
+        res.json({ success: true, redirect: "login" });
     });
 }
 

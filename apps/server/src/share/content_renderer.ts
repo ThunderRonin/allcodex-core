@@ -1,28 +1,22 @@
 import { sanitizeUrl } from "@braintree/sanitize-url";
-import { highlightAuto } from "@triliumnext/highlightjs";
-import ejs from "ejs";
 import escapeHtml from "escape-html";
-import { readFileSync } from "fs";
 import { t } from "i18next";
 import { HTMLElement, Options, parse, TextNode } from "node-html-parser";
-import { join } from "path";
 
 import becca from "../becca/becca.js";
 import BAttachment from '../becca/entities/battachment.js';
 import type BBranch from "../becca/entities/bbranch.js";
 import BNote from "../becca/entities/bnote.js";
-import assetPath, { assetUrlFragment } from "../services/asset_path.js";
+import { assetUrlFragment } from "../services/asset_path.js";
 import { generateCss, getIconPacks, MIME_TO_EXTENSION_MAPPINGS, ProcessedIconPack } from "../services/icon_packs.js";
 import log from "../services/log.js";
-import options from "../services/options.js";
-import utils, { getResourceDir, isDev, safeExtractMessageAndStackFromError } from "../services/utils.js";
+import utils from "../services/utils.js";
 import SAttachment from "./shaca/entities/sattachment.js";
 import SBranch from "./shaca/entities/sbranch.js";
 import type SNote from "./shaca/entities/snote.js";
 import shaca from "./shaca/shaca.js";
 import shareRoot from "./share_root.js";
 
-const shareAdjustedAssetPath = isDev ? assetPath : `../${assetPath}`;
 const templateCache: Map<string, string> = new Map();
 
 /**
@@ -69,193 +63,6 @@ function getSharedSubTreeRoot(note: SNote | BNote | undefined): Subroot {
     return getSharedSubTreeRoot(parentBranch.getParentNote());
 }
 
-export function renderNoteForExport(note: BNote, parentBranch: BBranch, basePath: string, ancestors: string[], iconPacks: ProcessedIconPack[]) {
-    const subRoot: Subroot = {
-        branch: parentBranch,
-        note: parentBranch.getNote()
-    };
-
-    // Determine JS to load.
-    const jsToLoad: string[] = [
-        `${basePath}assets/scripts.js`
-    ];
-    for (const jsRelation of note.getRelations("shareJs")) {
-        jsToLoad.push(`api/notes/${jsRelation.value}/download`);
-    }
-
-    return renderNoteContentInternal(note, {
-        subRoot,
-        rootNoteId: parentBranch.noteId,
-        cssToLoad: [
-            `${basePath}assets/styles.css`,
-            `${basePath}assets/scripts.css`,
-        ],
-        jsToLoad,
-        logoUrl: `${basePath}icon-color.svg`,
-        faviconUrl: `${basePath}favicon.ico`,
-        ancestors,
-        isStatic: true,
-        iconPackCss: iconPacks.map(p => generateCss(p, `${basePath}assets/icon-pack-${p.prefix.toLowerCase()}.${MIME_TO_EXTENSION_MAPPINGS[p.fontMime]}`))
-            .filter(Boolean)
-            .join("\n\n"),
-        iconPackSupportedPrefixes: iconPacks.map(p => p.prefix)
-    });
-}
-
-export function renderNoteContent(note: SNote) {
-    const subRoot = getSharedSubTreeRoot(note);
-
-    const ancestors: string[] = [];
-    let notePointer = note;
-    while (notePointer.parents[0]?.noteId !== subRoot.note?.noteId) {
-        const pointerParent = notePointer.parents[0];
-        if (!pointerParent) {
-            break;
-        }
-        ancestors.push(pointerParent.noteId);
-        notePointer = pointerParent;
-    }
-
-    // Determine CSS to load.
-    const cssToLoad: string[] = [];
-    if (!note.isLabelTruthy("shareOmitDefaultCss")) {
-        cssToLoad.push(`assets/styles.css`);
-        cssToLoad.push(`assets/scripts.css`);
-    }
-    for (const cssRelation of note.getRelations("shareCss")) {
-        cssToLoad.push(`api/notes/${cssRelation.value}/download`);
-    }
-
-    // Determine JS to load.
-    const jsToLoad: string[] = [
-        "assets/scripts.js"
-    ];
-    for (const jsRelation of note.getRelations("shareJs")) {
-        jsToLoad.push(`api/notes/${jsRelation.value}/download`);
-    }
-
-    const customLogoId = note.getRelation("shareLogo")?.value;
-    const logoUrl = customLogoId ? `api/images/${customLogoId}/image.png` : `../${assetUrlFragment}/images/icon-color.svg`;
-    const iconPacks = getIconPacks().filter(p => p.builtin || !!shaca.notes[p.manifestNoteId]);
-
-    return renderNoteContentInternal(note, {
-        subRoot,
-        rootNoteId: "_share",
-        cssToLoad,
-        jsToLoad,
-        logoUrl,
-        ancestors,
-        isStatic: false,
-        faviconUrl: note.hasRelation("shareFavicon") ? `api/notes/${note.getRelationValue("shareFavicon")}/download` : `../favicon.ico`,
-        iconPackCss: iconPacks.map(p => generateCss(p, p.builtin
-            ? `/share/assets/fonts/${p.fontAttachmentId}.${MIME_TO_EXTENSION_MAPPINGS[p.fontMime]}`
-            : `/share/api/attachments/${p.fontAttachmentId}/download`
-        ))
-            .filter(Boolean)
-            .join("\n\n"),
-        iconPackSupportedPrefixes: iconPacks.map(p => p.prefix)
-    });
-}
-
-interface RenderArgs {
-    subRoot: Subroot;
-    rootNoteId: string;
-    cssToLoad: string[];
-    jsToLoad: string[];
-    logoUrl: string;
-    ancestors: string[];
-    isStatic: boolean;
-    faviconUrl: string;
-    iconPackCss: string;
-    iconPackSupportedPrefixes: string[];
-}
-
-function renderNoteContentInternal(note: SNote | BNote, renderArgs: RenderArgs) {
-    // When rendering static share, non-protected JavaScript notes should be rendered as-is.
-    if (renderArgs.isStatic && note.mime.startsWith("application/javascript")) {
-        if (note.isProtected) {
-            return `console.log("Protected note cannot be exported.");`;
-        }
-
-        return note.getContent() ?? "";
-    }
-
-    const { header, content, isEmpty } = getContent(note);
-    const showLoginInShareTheme = options.getOption("showLoginInShareTheme");
-    const opts = {
-        note,
-        header,
-        content,
-        isEmpty,
-        assetPath: shareAdjustedAssetPath,
-        assetUrlFragment,
-        showLoginInShareTheme,
-        t,
-        isDev,
-        utils,
-        ...renderArgs,
-    };
-
-    // Check if the user has their own template.
-    if (note.hasRelation("shareTemplate")) {
-        // Get the template note and content
-        const templateId = note.getRelation("shareTemplate")?.value;
-        const templateNote = templateId && shaca.getNote(templateId);
-
-        // Make sure the note type is correct
-        if (templateNote && templateNote.type === "code" && templateNote.mime === "application/x-ejs") {
-            // EJS caches the result of this so we don't need to pre-cache
-            const includer = (path: string) => {
-                const childNote = templateNote.children.find((n) => path === n.title);
-                if (!childNote) throw new Error(`Unable to find child note: ${path}.`);
-                if (childNote.type !== "code" || childNote.mime !== "application/x-ejs") throw new Error("Incorrect child note type.");
-
-                const template = childNote.getContent();
-                if (typeof template !== "string") throw new Error("Invalid template content type.");
-
-                return { template };
-            };
-
-            // Try to render user's template, w/ fallback to default view
-            try {
-                const content = templateNote.getContent();
-                if (typeof content === "string") {
-                    return ejs.render(content, opts, { includer });
-                }
-            } catch (e: unknown) {
-                const [errMessage, errStack] = safeExtractMessageAndStackFromError(e);
-                log.error(`Rendering user provided share template (${templateId}) threw exception ${errMessage} with stacktrace: ${errStack}`);
-            }
-        }
-    }
-
-    // Render with the default view otherwise.
-    const templatePath = getDefaultTemplatePath("page");
-    return ejs.render(readTemplate(templatePath), opts, {
-        includer: (path) => {
-            // Path is relative to apps/server/dist/assets/views
-            return { template: readTemplate(getDefaultTemplatePath(path)) };
-        }
-    });
-}
-
-export function getDefaultTemplatePath(template: string) {
-    // Path is relative to apps/server/dist/assets/views
-    return process.env.NODE_ENV === "development"
-        ? join(__dirname, `../../../../packages/share-theme/src/templates/${template}.ejs`)
-        : join(getResourceDir(), `share-theme/templates/${template}.ejs`);
-}
-
-export function readTemplate(path: string) {
-    const cachedTemplate = templateCache.get(path);
-    if (cachedTemplate) {
-        return cachedTemplate;
-    }
-
-    const templateString = readFileSync(path, "utf-8");
-    templateCache.set(path, templateString);
-    return templateString;
-}
 
 export function getContent(note: SNote | BNote) {
     if (note.isProtected) {
@@ -424,18 +231,6 @@ function renderText(result: Result, note: SNote | BNote) {
             if (linkEl.classList.contains("reference-link")) {
                 cleanUpReferenceLinks(linkEl, getNote);
             }
-        }
-
-        // Apply syntax highlight.
-        for (const codeEl of document.querySelectorAll("pre code")) {
-            if (codeEl.classList.contains("language-mermaid") && note.type === "text") {
-                // Mermaid is handled on client-side, we don't want to break it by adding syntax highlighting.
-                continue;
-            }
-
-            const highlightResult = highlightAuto(codeEl.text);
-            codeEl.innerHTML = highlightResult.value;
-            codeEl.classList.add("hljs");
         }
 
         result.content = document.innerHTML ?? "";

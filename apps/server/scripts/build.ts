@@ -7,8 +7,6 @@ async function main() {
 
     // Copy assets
     build.copy("src/assets", "assets/");
-    build.triggerBuildAndCopyTo("packages/share-theme", "share-theme/assets/");
-    build.copy("/packages/share-theme/src/templates", "share-theme/templates/");
 
     // Copy node modules dependencies
     build.copyNodeModules([ "better-sqlite3", "bindings", "file-uri-to-path" ]);

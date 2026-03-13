@@ -20,14 +20,16 @@ describe("Login Route test", () => {
         ({ sessionStore, CLEAN_UP_INTERVAL } = (await import("./session_parser.js")));
     });
 
-    it("should return the login page, when using a GET request", async () => {
+    it("should return the login page as JSON, when using a GET request", async () => {
 
-        // RegExp for login page specific string in HTML
         const res = await supertest(app)
             .get("/login")
             .expect(200);
 
-        expect(res.text).toMatch(/assets\/v[0-9.a-z]+\/src\/login\.js/);
+        const body = JSON.parse(res.text);
+        expect(body).toHaveProperty("wrongPassword");
+        expect(body).toHaveProperty("wrongTotp");
+        expect(body).toHaveProperty("totpEnabled");
 
     });
 
@@ -56,7 +58,7 @@ describe("Login Route test", () => {
             res = await supertest(app)
                 .post("/login")
                 .send({ password: "demo1234", rememberMe: 1 })
-                .expect(302);
+                .expect(200);
             setCookieHeader = res.headers["set-cookie"][0];
         });
 
@@ -90,11 +92,11 @@ describe("Login Route test", () => {
             // Simulate user waiting half the period before the session expires.
             vi.setSystemTime(originalExpiry!.getTime() - (originalExpiry!.getTime() - Date.now()) / 2);
 
-            // Make a request to renew the session.
+            // Make a request - in headless mode GET / returns 404 since there's no SPA
             await supertest(app)
                 .get("/")
                 .set("Cookie", setCookieHeader)
-                .expect(200);
+                .expect(404);
 
             // Check the session is still valid and has not been renewed.
             const { session, expiry } = await getSessionFromCookie(setCookieHeader);
@@ -122,7 +124,7 @@ describe("Login Route test", () => {
             res = await supertest(app)
                 .post("/login")
                 .send({ password: "demo1234" })
-                .expect(302);
+                .expect(200);
 
             setCookieHeader = res.headers["set-cookie"][0];
         });
@@ -149,11 +151,11 @@ describe("Login Route test", () => {
             // Simulate user waiting half the period before the session expires.
             vi.setSystemTime(originalExpiry!.getTime() - (originalExpiry!.getTime() - Date.now()) / 2);
 
-            // Make a request to renew the session.
+            // Make a request - in headless mode GET / returns 404 since there's no SPA
             await supertest(app)
                 .get("/")
                 .set("Cookie", setCookieHeader)
-                .expect(200);
+                .expect(404);
 
             // Check the session is still valid and has been renewed.
             const { session, expiry } = await getSessionFromCookie(setCookieHeader);

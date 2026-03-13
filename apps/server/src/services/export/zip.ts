@@ -21,13 +21,12 @@ import type { NoteMetaFile } from "../meta/note_meta.js";
 import HtmlExportProvider from "./zip/html.js";
 import { AdvancedExportOptions, type ExportFormat, ZipExportProviderData } from "./zip/abstract_provider.js";
 import MarkdownExportProvider from "./zip/markdown.js";
-import ShareThemeExportProvider from "./zip/share_theme.js";
 import type BNote from "../../becca/entities/bnote.js";
 import { NoteType } from "@triliumnext/commons";
 
 async function exportToZip(taskContext: TaskContext<"export">, branch: BBranch, format: ExportFormat, res: Response | fs.WriteStream, setHeaders = true, zipExportOptions?: AdvancedExportOptions) {
-    if (!["html", "markdown", "share"].includes(format)) {
-        throw new ValidationError(`Only 'html', 'markdown' and 'share' allowed as export format, '${format}' given`);
+    if (!["html", "markdown"].includes(format)) {
+        throw new ValidationError(`Only 'html' and 'markdown' allowed as export format, '${format}' given`);
     }
 
     const archive = archiver("zip", {
@@ -52,8 +51,6 @@ async function exportToZip(taskContext: TaskContext<"export">, branch: BBranch, 
                 return new HtmlExportProvider(providerData);
             case "markdown":
                 return new MarkdownExportProvider(providerData);
-            case "share":
-                return new ShareThemeExportProvider(providerData);
             default:
                 throw new Error();
         }

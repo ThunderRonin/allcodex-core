@@ -1,9 +1,9 @@
 import config from "./config.js";
-import { isElectron } from "./utils.js";
+import config from "./config.js";
 
 function getHost() {
     const envHost = process.env.TRILIUM_HOST;
-    if (envHost && !isElectron) {
+    if (envHost) {
         return envHost;
     }
 

@@ -1,5 +1,4 @@
 
-
 import chardet from "chardet";
 import crypto from "crypto";
 import escape from "escape-html";
@@ -25,7 +24,7 @@ export const isWindows = process.platform === "win32";
 
 export const isWindows11 = isWindows && osVersion[0] === 10 && osVersion[2] >= 22000;
 
-export const isElectron = !!process.versions["electron"];
+export const isElectron = false;
 
 export const isDev = !!(process.env.TRILIUM_ENV && process.env.TRILIUM_ENV === "dev");
 
@@ -145,14 +144,8 @@ export function escapeRegExp(str: string) {
 }
 
 export async function crash(message: string) {
-    if (isElectron) {
-        const electron = await import("electron");
-        electron.dialog.showErrorBox(t("modals.error_title"), message);
-        electron.app.exit(1);
-    } else {
-        log.error(message);
-        process.exit(1);
-    }
+    log.error(message);
+    process.exit(1);
 }
 
 export function getContentDisposition(filename: string) {
@@ -317,8 +310,7 @@ export function stringToInt(val: string | undefined) {
 }
 
 /**
- * Returns the directory for resources. On Electron builds this corresponds to the `resources` subdirectory inside the distributable package.
- * On development builds, this simply refers to the src directory of the application.
+ * Returns the directory for resources.
  *
  * @returns the resource dir.
  */
@@ -327,12 +319,14 @@ export function getResourceDir() {
         return process.env.TRILIUM_RESOURCE_DIR;
     }
 
-    if (isElectron && !isDev) return __dirname;
     if (!isDev) {
+        // use path.join because __dirname can be undefined in some ES environments (though we use bundlers/tsx usually)
+        // actually main.ts uses process.argv so path.dirname(process.argv[1]) is fallback
         return path.dirname(process.argv[1]);
     }
 
-    return path.join(__dirname, "..");
+    // in dev it's project root
+    return path.join(import.meta.dirname, "..");
 }
 
 // TODO: Deduplicate with src/public/app/services/utils.ts
@@ -469,12 +463,12 @@ export function normalizeCustomHandlerPattern(pattern: string | null | undefined
 
         // If already ends with slash, create both versions
         if (basePattern.endsWith('/')) {
-            const withoutSlash = `${basePattern.slice(0, -1)  }$`;
+            const withoutSlash = `${basePattern.slice(0, -1)}$`;
             const withSlash = pattern;
             return [withoutSlash, withSlash];
         }
         // Add optional trailing slash
-        const withSlash = `${basePattern  }/?$`;
+        const withSlash = `${basePattern}/?$`;
         return [withSlash];
 
     }
@@ -484,7 +478,7 @@ export function normalizeCustomHandlerPattern(pattern: string | null | undefined
         const withoutSlash = pattern.slice(0, -1);
         return [withoutSlash, pattern];
     }
-    const withSlash = `${pattern  }/`;
+    const withSlash = `${pattern}/`;
     return [pattern, withSlash];
 
 }

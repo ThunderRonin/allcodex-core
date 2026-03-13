@@ -52,14 +52,6 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Update build info
         run: pnpm run chore:update-build-info
-      - name: Trigger client build
-        run: pnpm client:build
-      - name: Send client bundle stats to RelativeCI
-        if: false
-        uses: relative-ci/agent-action@v3
-        with:
-          webpackStatsFile: ./apps/client/dist/webpack-stats.json
-          key: ${{ secrets.RELATIVE_CI_CLIENT_KEY }}
       - name: Trigger server build
         run: pnpm run server:build
       - uses: docker/setup-buildx-action@v3
