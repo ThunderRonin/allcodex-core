@@ -131,6 +131,62 @@ export default function buildHiddenSubtreeTemplates() {
                     { name: "label:cha", type: "label", value: "promoted,alias=CHA,single,number" },
                     { name: "label:abilities", type: "label", value: "promoted,alias=Special Abilities,single,text" }
                 ]
+            },
+            {
+                id: "_template_item",
+                type: "text",
+                title: "Item / Artifact",
+                icon: "bx bx-diamond",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:itemType", type: "label", value: "promoted,alias=Item Type,single,text" },
+                    { name: "label:rarity", type: "label", value: "promoted,alias=Rarity,single,text" },
+                    { name: "label:creator", type: "label", value: "promoted,alias=Creator,single,text" },
+                    { name: "label:magicProperties", type: "label", value: "promoted,alias=Magic Properties,single,text" },
+                    { name: "label:history", type: "label", value: "promoted,alias=History,single,text" }
+                ]
+            },
+            {
+                id: "_template_spell",
+                type: "text",
+                title: "Spell / Magic",
+                icon: "bx bx-meteor",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:school", type: "label", value: "promoted,alias=School,single,text" },
+                    { name: "label:level", type: "label", value: "promoted,alias=Level,single,text" },
+                    { name: "label:castingTime", type: "label", value: "promoted,alias=Casting Time,single,text" },
+                    { name: "label:range", type: "label", value: "promoted,alias=Range,single,text" },
+                    { name: "label:components", type: "label", value: "promoted,alias=Components,single,text" },
+                    { name: "label:duration", type: "label", value: "promoted,alias=Duration,single,text" }
+                ]
+            },
+            {
+                id: "_template_building",
+                type: "text",
+                title: "Building / Structure",
+                icon: "bx bx-building-house",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:buildingType", type: "label", value: "promoted,alias=Type,single,text" },
+                    { name: "label:owner", type: "label", value: "promoted,alias=Owner,single,text" },
+                    { name: "label:purpose", type: "label", value: "promoted,alias=Purpose,single,text" },
+                    { name: "label:condition", type: "label", value: "promoted,alias=Condition,single,text" },
+                    { name: "label:secrets", type: "label", value: "promoted,alias=Secrets,single,text" }
+                ]
+            },
+            {
+                id: "_template_language",
+                type: "text",
+                title: "Language / Script",
+                icon: "bx bx-font-family",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:languageFamily", type: "label", value: "promoted,alias=Language Family,single,text" },
+                    { name: "label:speakers", type: "label", value: "promoted,alias=Speakers,single,text" },
+                    { name: "label:script", type: "label", value: "promoted,alias=Script,single,text" },
+                    { name: "label:samplePhrase", type: "label", value: "promoted,alias=Sample Phrase,single,text" }
+                ]
             }
         ]
     };

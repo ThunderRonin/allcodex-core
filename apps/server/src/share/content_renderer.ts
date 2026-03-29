@@ -82,6 +82,15 @@ export function getContent(note: SNote | BNote) {
         };
     }
 
+    // Draft notes are hidden from shared/public output
+    if (note.hasLabel("draft")) {
+        return {
+            header: "",
+            content: "",
+            isEmpty: true
+        };
+    }
+
     const result: Result = {
         content: note.getContent(),
         header: "",
@@ -162,7 +171,7 @@ function applyWorldVariables(document: HTMLElement) {
                     return val !== undefined ? escapeHtml(val) : `{{${name}}}`;
                 });
                 if (replaced !== original) {
-                    child.replaceWith(new TextNode(replaced));
+                    (child as any).replaceWith(new TextNode(replaced));
                 }
             } else {
                 walkNode(child as unknown as HTMLElement);
