@@ -65,6 +65,7 @@ function register(router: Router) {
         const _params = {};
         eu.validateAndPatch(_params, req.body, ALLOWED_PROPERTIES_FOR_CREATE_NOTE);
         const params = _params as NoteParams;
+        params.content ??= "";
 
         try {
             const resp = noteService.createNewNote(params);

@@ -503,6 +503,15 @@ const imageUrlToAttachmentIdMapping: Record<string, string> = {};
 async function downloadImage(noteId: string, imageUrl: string) {
     const unescapedUrl = unescapeHtml(imageUrl);
 
+    // Skip relative URLs and data URIs — they can't be downloaded as external resources.
+    // Relative URLs (e.g. /api/lore/.../image) are portal proxy links for notes already
+    // stored as image notes in AllCodex; re-downloading them would be redundant and fails
+    // because AllCodex has no knowledge of the portal's base URL.
+    if (!unescapedUrl.startsWith("http://") && !unescapedUrl.startsWith("https://") && !unescapedUrl.startsWith("file://")) {
+        log.info(`Skipping image download of '${imageUrl}' for note '${noteId}' — not an absolute URL.`);
+        return;
+    }
+
     try {
         let imageBuffer: Buffer;
 
