@@ -119,17 +119,28 @@ export default function buildHiddenSubtreeTemplates() {
                 icon: "bx bx-list-check",
                 attributes: [
                     { name: "template", type: "label" },
+                    { name: "statblock", type: "label" },
                     { name: "label:crName", type: "label", value: "promoted,alias=Name,single,text" },
-                    { name: "label:crLevel", type: "label", value: "promoted,alias=CR,single,number" },
+                    { name: "label:challengeRating", type: "label", value: "promoted,alias=CR,single,text" },
+                    { name: "label:crLevel", type: "label", value: "promoted,alias=CR (numeric),single,number" },
+                    { name: "label:creatureType", type: "label", value: "promoted,alias=Type,single,text" },
+                    { name: "label:size", type: "label", value: "promoted,alias=Size,single,text" },
+                    { name: "label:alignment", type: "label", value: "promoted,alias=Alignment,single,text" },
                     { name: "label:ac", type: "label", value: "promoted,alias=AC,single,number" },
                     { name: "label:hp", type: "label", value: "promoted,alias=HP,single,number" },
+                    { name: "label:speed", type: "label", value: "promoted,alias=Speed,single,text" },
                     { name: "label:str", type: "label", value: "promoted,alias=STR,single,number" },
                     { name: "label:dex", type: "label", value: "promoted,alias=DEX,single,number" },
                     { name: "label:con", type: "label", value: "promoted,alias=CON,single,number" },
                     { name: "label:int", type: "label", value: "promoted,alias=INT,single,number" },
                     { name: "label:wis", type: "label", value: "promoted,alias=WIS,single,number" },
                     { name: "label:cha", type: "label", value: "promoted,alias=CHA,single,number" },
-                    { name: "label:abilities", type: "label", value: "promoted,alias=Special Abilities,single,text" }
+                    { name: "label:immunities", type: "label", value: "promoted,alias=Immunities,single,text" },
+                    { name: "label:resistances", type: "label", value: "promoted,alias=Resistances,single,text" },
+                    { name: "label:vulnerabilities", type: "label", value: "promoted,alias=Vulnerabilities,single,text" },
+                    { name: "label:abilities", type: "label", value: "promoted,alias=Special Abilities,single,text" },
+                    { name: "label:actions", type: "label", value: "promoted,alias=Actions,single,text" },
+                    { name: "label:legendaryActions", type: "label", value: "promoted,alias=Legendary Actions,single,text" }
                 ]
             },
             {
@@ -186,6 +197,50 @@ export default function buildHiddenSubtreeTemplates() {
                     { name: "label:speakers", type: "label", value: "promoted,alias=Speakers,single,text" },
                     { name: "label:script", type: "label", value: "promoted,alias=Script,single,text" },
                     { name: "label:samplePhrase", type: "label", value: "promoted,alias=Sample Phrase,single,text" }
+                ]
+            },
+            {
+                id: "_template_session",
+                type: "text",
+                title: "Session",
+                icon: "bx bx-game",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:sessionDate", type: "label", value: "promoted,alias=Session Date,single,text" },
+                    { name: "label:players", type: "label", value: "promoted,alias=Players,single,text" },
+                    { name: "label:sessionStatus", type: "label", value: "promoted,alias=Status,single,text" },
+                    { name: "label:recap", type: "label", value: "promoted,alias=Recap,single,text" },
+                    { name: "label:hooks", type: "label", value: "promoted,alias=Active Hooks,single,text" },
+                    { name: "label:gmNotes", type: "label", value: "promoted,alias=GM Notes,single,text" }
+                ]
+            },
+            {
+                id: "_template_quest",
+                type: "text",
+                title: "Quest",
+                icon: "bx bx-target-lock",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:questStatus", type: "label", value: "promoted,alias=Status,single,text" },
+                    { name: "label:questGiver", type: "label", value: "promoted,alias=Quest Giver,single,text" },
+                    { name: "label:reward", type: "label", value: "promoted,alias=Reward,single,text" },
+                    { name: "label:location", type: "label", value: "promoted,alias=Location,single,text" },
+                    { name: "label:hooks", type: "label", value: "promoted,alias=Hooks,single,text" },
+                    { name: "label:consequences", type: "label", value: "promoted,alias=Consequences,single,text" },
+                    { name: "quest", type: "label" }
+                ]
+            },
+            {
+                id: "_template_scene",
+                type: "text",
+                title: "Scene",
+                icon: "bx bx-clapperboard",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:location", type: "label", value: "promoted,alias=Location,single,text" },
+                    { name: "label:participants", type: "label", value: "promoted,alias=Participants,single,text" },
+                    { name: "label:outcome", type: "label", value: "promoted,alias=Outcome,single,text" },
+                    { name: "label:gmNotes", type: "label", value: "promoted,alias=GM Notes,single,text" }
                 ]
             }
         ]
