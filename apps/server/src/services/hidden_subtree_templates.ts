@@ -119,17 +119,28 @@ export default function buildHiddenSubtreeTemplates() {
                 icon: "bx bx-list-check",
                 attributes: [
                     { name: "template", type: "label" },
+                    { name: "statblock", type: "label" },
                     { name: "label:crName", type: "label", value: "promoted,alias=Name,single,text" },
-                    { name: "label:crLevel", type: "label", value: "promoted,alias=CR,single,number" },
+                    { name: "label:challengeRating", type: "label", value: "promoted,alias=CR,single,text" },
+                    { name: "label:crLevel", type: "label", value: "promoted,alias=CR (numeric),single,number" },
+                    { name: "label:creatureType", type: "label", value: "promoted,alias=Type,single,text" },
+                    { name: "label:size", type: "label", value: "promoted,alias=Size,single,text" },
+                    { name: "label:alignment", type: "label", value: "promoted,alias=Alignment,single,text" },
                     { name: "label:ac", type: "label", value: "promoted,alias=AC,single,number" },
                     { name: "label:hp", type: "label", value: "promoted,alias=HP,single,number" },
+                    { name: "label:speed", type: "label", value: "promoted,alias=Speed,single,text" },
                     { name: "label:str", type: "label", value: "promoted,alias=STR,single,number" },
                     { name: "label:dex", type: "label", value: "promoted,alias=DEX,single,number" },
                     { name: "label:con", type: "label", value: "promoted,alias=CON,single,number" },
                     { name: "label:int", type: "label", value: "promoted,alias=INT,single,number" },
                     { name: "label:wis", type: "label", value: "promoted,alias=WIS,single,number" },
                     { name: "label:cha", type: "label", value: "promoted,alias=CHA,single,number" },
-                    { name: "label:abilities", type: "label", value: "promoted,alias=Special Abilities,single,text" }
+                    { name: "label:immunities", type: "label", value: "promoted,alias=Immunities,single,text" },
+                    { name: "label:resistances", type: "label", value: "promoted,alias=Resistances,single,text" },
+                    { name: "label:vulnerabilities", type: "label", value: "promoted,alias=Vulnerabilities,single,text" },
+                    { name: "label:abilities", type: "label", value: "promoted,alias=Special Abilities,single,text" },
+                    { name: "label:actions", type: "label", value: "promoted,alias=Actions,single,text" },
+                    { name: "label:legendaryActions", type: "label", value: "promoted,alias=Legendary Actions,single,text" }
                 ]
             },
             {
@@ -186,6 +197,140 @@ export default function buildHiddenSubtreeTemplates() {
                     { name: "label:speakers", type: "label", value: "promoted,alias=Speakers,single,text" },
                     { name: "label:script", type: "label", value: "promoted,alias=Script,single,text" },
                     { name: "label:samplePhrase", type: "label", value: "promoted,alias=Sample Phrase,single,text" }
+                ]
+            },
+            {
+                id: "_template_session",
+                type: "text",
+                title: "Session",
+                icon: "bx bx-game",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:sessionDate", type: "label", value: "promoted,alias=Session Date,single,text" },
+                    { name: "label:players", type: "label", value: "promoted,alias=Players,single,text" },
+                    { name: "label:sessionStatus", type: "label", value: "promoted,alias=Status,single,text" },
+                    { name: "label:recap", type: "label", value: "promoted,alias=Recap,single,text" },
+                    { name: "label:hooks", type: "label", value: "promoted,alias=Active Hooks,single,text" },
+                    { name: "label:gmNotes", type: "label", value: "promoted,alias=GM Notes,single,text" }
+                ]
+            },
+            {
+                id: "_template_quest",
+                type: "text",
+                title: "Quest",
+                icon: "bx bx-target-lock",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:questStatus", type: "label", value: "promoted,alias=Status,single,text" },
+                    { name: "label:questGiver", type: "label", value: "promoted,alias=Quest Giver,single,text" },
+                    { name: "label:reward", type: "label", value: "promoted,alias=Reward,single,text" },
+                    { name: "label:location", type: "label", value: "promoted,alias=Location,single,text" },
+                    { name: "label:hooks", type: "label", value: "promoted,alias=Hooks,single,text" },
+                    { name: "label:consequences", type: "label", value: "promoted,alias=Consequences,single,text" },
+                    { name: "quest", type: "label" }
+                ]
+            },
+            {
+                id: "_template_scene",
+                type: "text",
+                title: "Scene",
+                icon: "bx bx-clapperboard",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:location", type: "label", value: "promoted,alias=Location,single,text" },
+                    { name: "label:participants", type: "label", value: "promoted,alias=Participants,single,text" },
+                    { name: "label:outcome", type: "label", value: "promoted,alias=Outcome,single,text" },
+                    { name: "label:gmNotes", type: "label", value: "promoted,alias=GM Notes,single,text" }
+                ]
+            },
+            // ── Societal & Metaphysical ───────────────────────────────────────
+            {
+                id: "_template_organization",
+                type: "text",
+                title: "Organization",
+                icon: "bx bx-buildings",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:orgType", type: "label", value: "promoted,alias=Type,single,text" },
+                    { name: "label:leader", type: "label", value: "promoted,alias=Leader,single,text" },
+                    { name: "label:headquarters", type: "label", value: "promoted,alias=Headquarters,single,text" },
+                    { name: "label:membership", type: "label", value: "promoted,alias=Membership,single,text" },
+                    { name: "label:purpose", type: "label", value: "promoted,alias=Purpose,single,text" },
+                    { name: "label:status", type: "label", value: "promoted,alias=Status,single,text" },
+                    { name: "organization", type: "label" }
+                ]
+            },
+            {
+                id: "_template_race",
+                type: "text",
+                title: "Race / Species",
+                icon: "bx bx-dna",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:homeland", type: "label", value: "promoted,alias=Homeland,single,text" },
+                    { name: "label:lifespan", type: "label", value: "promoted,alias=Lifespan,single,text" },
+                    { name: "label:traits", type: "label", value: "promoted,alias=Traits,single,text" },
+                    { name: "label:culture", type: "label", value: "promoted,alias=Culture,single,text" },
+                    { name: "label:relations", type: "label", value: "promoted,alias=Relations,single,text" },
+                    { name: "race", type: "label" }
+                ]
+            },
+            {
+                id: "_template_myth",
+                type: "text",
+                title: "Myth / Legend",
+                icon: "bx bx-book-bookmark",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:mythType", type: "label", value: "promoted,alias=Type,single,text" },
+                    { name: "label:origin", type: "label", value: "promoted,alias=Origin,single,text" },
+                    { name: "label:truthStatus", type: "label", value: "promoted,alias=Truth Status,single,text" },
+                    { name: "label:relatedEntities", type: "label", value: "promoted,alias=Related Entities,single,text" },
+                    { name: "myth", type: "label" }
+                ]
+            },
+            {
+                id: "_template_cosmology",
+                type: "text",
+                title: "Cosmology",
+                icon: "bx bx-planet",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:planes", type: "label", value: "promoted,alias=Planes,single,text" },
+                    { name: "label:cosmicForces", type: "label", value: "promoted,alias=Cosmic Forces,single,text" },
+                    { name: "label:afterlife", type: "label", value: "promoted,alias=Afterlife,single,text" },
+                    { name: "label:creationMyth", type: "label", value: "promoted,alias=Creation Myth,single,text" },
+                    { name: "cosmology", type: "label" }
+                ]
+            },
+            {
+                id: "_template_deity",
+                type: "text",
+                title: "Deity",
+                icon: "bx bx-crown",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:domain", type: "label", value: "promoted,alias=Domain,single,text" },
+                    { name: "label:alignment", type: "label", value: "promoted,alias=Alignment,single,text" },
+                    { name: "label:symbol", type: "label", value: "promoted,alias=Symbol,single,text" },
+                    { name: "label:worshippers", type: "label", value: "promoted,alias=Worshippers,single,text" },
+                    { name: "label:divineStatus", type: "label", value: "promoted,alias=Status,single,text" },
+                    { name: "deity", type: "label" }
+                ]
+            },
+            {
+                id: "_template_religion",
+                type: "text",
+                title: "Religion",
+                icon: "bx bx-church",
+                attributes: [
+                    { name: "template", type: "label" },
+                    { name: "label:deity", type: "label", value: "promoted,alias=Primary Deity,single,text" },
+                    { name: "label:tenets", type: "label", value: "promoted,alias=Tenets,single,text" },
+                    { name: "label:practices", type: "label", value: "promoted,alias=Practices,single,text" },
+                    { name: "label:holyText", type: "label", value: "promoted,alias=Holy Text,single,text" },
+                    { name: "label:faithStatus", type: "label", value: "promoted,alias=Status,single,text" },
+                    { name: "religion", type: "label" }
                 ]
             }
         ]
