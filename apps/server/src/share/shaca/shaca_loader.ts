@@ -86,6 +86,11 @@ function load() {
 }
 
 function ensureLoad() {
+    if (process.env.TRILIUM_INTEGRATION_TEST) {
+        load();
+        return;
+    }
+
     if (!shaca.loaded) {
         load();
     }

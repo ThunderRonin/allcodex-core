@@ -1,216 +1,297 @@
-import { test, expect } from "@playwright/test";
-import App from "./support/app";
+import { test, expect, type APIRequestContext } from "@playwright/test";
 
-test.describe("LLM Chat Features", () => {
-    test("Should handle basic navigation", async ({ page, context }) => {
-        page.setDefaultTimeout(15_000);
+declare const process: {
+    env: Record<string, string | undefined>;
+};
 
-        const app = new App(page, context);
-        await app.goto();
+const BASE_URL = process.env.BASE_URL ?? "http://127.0.0.1:8082";
+const TEMPLATE_BY_LORE_TYPE = {
+    character: "_template_character",
+    location: "_template_location",
+    faction: "_template_faction",
+    event: "_template_event"
+} as const;
 
-        // Basic navigation test - verify the app loads
-        await expect(app.currentNoteSplit).toBeVisible();
-        await expect(app.noteTree).toBeVisible();
-        
-        // Test passes if basic interface is working
-        expect(true).toBe(true);
-    });
+type CreatedNote = {
+    noteId: string;
+    title: string;
+    type: string;
+    mime: string;
+};
 
-    test("Should look for LLM/AI features in the interface", async ({ page, context }) => {
-        const app = new App(page, context);
-        await app.goto();
+type CreatedAttribute = {
+    attributeId: string;
+    noteId: string;
+    type: "label" | "relation";
+    name: string;
+    value: string;
+};
 
-        // Look for any AI/LLM related elements in the interface
-        const aiElements = page.locator('[class*="ai"], [class*="llm"], [class*="chat"], [data-*="ai"], [data-*="llm"]');
-        const aiElementsCount = await aiElements.count();
-        
-        if (aiElementsCount > 0) {
-            console.log(`Found ${aiElementsCount} AI/LLM related elements in the interface`);
-            
-            // If AI elements exist, verify they are in the DOM
-            const firstAiElement = aiElements.first();
-            expect(await firstAiElement.count()).toBeGreaterThan(0);
-        } else {
-            console.log("No AI/LLM elements found - this may be expected in test environment");
-        }
-        
-        // Test always passes - we're just checking for presence
-        expect(true).toBe(true);
-    });
+type NoteAttribute = {
+    noteId: string;
+    type: "label" | "relation";
+    name: string;
+    value: string;
+};
 
-    test("Should handle launcher functionality", async ({ page, context }) => {
-        const app = new App(page, context);
-        await app.goto();
+type SearchResult = {
+    noteId: string;
+    title: string;
+};
 
-        // Test the launcher bar functionality
-        await expect(app.launcherBar).toBeVisible();
-        
-        // Look for any buttons in the launcher
-        const launcherButtons = app.launcherBar.locator('.launcher-button');
-        const buttonCount = await launcherButtons.count();
-        
-        if (buttonCount > 0) {
-            // Try clicking the first launcher button
-            const firstButton = launcherButtons.first();
-            await expect(firstButton).toBeVisible();
-            
-            // Click and verify some response
-            await firstButton.click();
-            await page.waitForTimeout(500);
-            
-            // Verify the interface is still responsive
-            await expect(app.currentNoteSplit).toBeVisible();
-        }
-        
-        expect(true).toBe(true);
-    });
+type SearchResponse = {
+    results: SearchResult[];
+};
 
-    test("Should handle note creation", async ({ page, context }) => {
-        const app = new App(page, context);
-        await app.goto();
+type NoteResponse = {
+    noteId: string;
+    title: string;
+    attributes?: Array<CreatedAttribute>;
+};
 
-        // Verify basic UI is loaded
-        await expect(app.noteTree).toBeVisible();
-        
-        // Get initial tab count
-        const initialTabCount = await app.tabBar.locator('.note-tab-wrapper').count();
-        
-        // Try to add a new tab using the UI button
+test.describe("AllCodex Lore Workflows", () => {
+    test("creates lore notes with canonical attributes through ETAPI", async ({ request }) => {
+        const createdNoteIds: string[] = [];
+
         try {
-            await app.addNewTab();
-            await page.waitForTimeout(1000);
-            
-            // Verify a new tab was created
-            const newTabCount = await app.tabBar.locator('.note-tab-wrapper').count();
-            expect(newTabCount).toBeGreaterThan(initialTabCount);
-            
-            // The new tab should have focus, so we can test if we can interact with any note
-            // Instead of trying to find a hidden title input, let's just verify the tab system works
-            const activeTab = await app.getActiveTab();
-            await expect(activeTab).toBeVisible();
-            
-            console.log("Successfully created a new tab");
-        } catch (error) {
-            console.log("Could not create new tab, but basic navigation works");
-            // Even if tab creation fails, the test passes if basic navigation works
-            await expect(app.noteTree).toBeVisible();
-            await expect(app.launcherBar).toBeVisible();
+            const uniqueSuffix = `${Date.now()}`;
+            const character = await createLoreNote(request, {
+                parentNoteId: "root",
+                title: `QA Character ${uniqueSuffix}`,
+                loreType: "character",
+                content: "<p>Archivist of the eastern vault.</p>"
+            });
+            const location = await createLoreNote(request, {
+                parentNoteId: "root",
+                title: `QA Location ${uniqueSuffix}`,
+                loreType: "location",
+                content: "<p>Vault-city beneath the basalt sea.</p>"
+            });
+
+            createdNoteIds.push(character.noteId, location.noteId);
+
+            const appInfo = await getJson<{ appVersion: string }>(request, "/etapi/app-info");
+            expect(appInfo.appVersion).toBeTruthy();
+
+            const characterNote = await getJson<NoteResponse>(request, `/etapi/notes/${character.noteId}`);
+            const locationNote = await getJson<NoteResponse>(request, `/etapi/notes/${location.noteId}`);
+
+            expect(characterNote.attributes?.some((attribute) => {
+                return attribute.type === "label" && attribute.name === "lore";
+            })).toBe(true);
+            expect(characterNote.attributes?.some((attribute) => {
+                return attribute.type === "label" && attribute.name === "loreType" && attribute.value === "character";
+            })).toBe(true);
+            expect(characterNote.attributes?.some((attribute) => {
+                return attribute.type === "relation" && attribute.name === "template" && attribute.value === TEMPLATE_BY_LORE_TYPE.character;
+            })).toBe(true);
+
+            expect(locationNote.attributes?.some((attribute) => {
+                return attribute.type === "label" && attribute.name === "loreType" && attribute.value === "location";
+            })).toBe(true);
+
+            expect(await getNoteContent(request, character.noteId)).toContain("Archivist of the eastern vault.");
+            expect(await getNoteContent(request, location.noteId)).toContain("Vault-city beneath the basalt sea.");
+        } finally {
+            await deleteNotes(request, createdNoteIds);
         }
     });
 
-    test("Should handle search functionality", async ({ page, context }) => {
-        const app = new App(page, context);
-        await app.goto();
+    test("stores lore relationships as ETAPI relations", async ({ request }) => {
+        const createdNoteIds: string[] = [];
 
-        // Look for the search input specifically (based on the quick_search.ts template)
-        const searchInputs = page.locator('.quick-search .search-string');
-        const count = await searchInputs.count();
-        
-        // The search widget might be hidden by default on some layouts
-        if (count > 0) {
-            // Use the first visible search input
-            const searchInput = searchInputs.first();
-            
-            if (await searchInput.isVisible()) {
-                // Test search input
-                await searchInput.fill('test search');
-                await expect(searchInput).toHaveValue('test search');
-                
-                // Clear search
-                await searchInput.fill('');
-            } else {
-                console.log("Search input not visible in current layout");
-            }
-        } else {
-            // Skip test if search is not visible
-            console.log("No search inputs found in current layout");
+        try {
+            const uniqueSuffix = `${Date.now()}`;
+            const faction = await createLoreNote(request, {
+                parentNoteId: "root",
+                title: `QA Faction ${uniqueSuffix}`,
+                loreType: "faction",
+                content: "<p>The pactbound wardens of the vault.</p>"
+            });
+            const character = await createLoreNote(request, {
+                parentNoteId: "root",
+                title: `QA Ally ${uniqueSuffix}`,
+                loreType: "character",
+                content: "<p>Sworn to the wardens.</p>"
+            });
+
+            createdNoteIds.push(faction.noteId, character.noteId);
+
+            const relation = await addAttribute(request, {
+                noteId: character.noteId,
+                type: "relation",
+                name: "ally",
+                value: faction.noteId
+            });
+
+            const storedRelation = await getJson<CreatedAttribute>(request, `/etapi/attributes/${relation.attributeId}`);
+            expect(storedRelation).toMatchObject({
+                attributeId: relation.attributeId,
+                noteId: character.noteId,
+                type: "relation",
+                name: "ally",
+                value: faction.noteId
+            });
+
+            const characterNote = await getJson<NoteResponse>(request, `/etapi/notes/${character.noteId}`);
+            expect(characterNote.attributes?.some((attribute) => {
+                return attribute.type === "relation"
+                    && attribute.name === "ally"
+                    && attribute.value === faction.noteId;
+            })).toBe(true);
+        } finally {
+            await deleteNotes(request, createdNoteIds);
         }
     });
 
-    test("Should handle basic interface interactions", async ({ page, context }) => {
-        const app = new App(page, context);
-        await app.goto();
+    test("stores code, mermaid, and rich text note content through ETAPI", async ({ request }) => {
+        const createdNoteIds: string[] = [];
 
-        // Test that the interface responds to basic interactions
-        await expect(app.currentNoteSplit).toBeVisible();
-        await expect(app.noteTree).toBeVisible();
-        
-        // Test clicking on note tree
-        const noteTreeItems = app.noteTree.locator('.fancytree-node');
-        const itemCount = await noteTreeItems.count();
-        
-        if (itemCount > 0) {
-            // Click on a note tree item
-            const firstItem = noteTreeItems.first();
-            await firstItem.click();
-            await page.waitForTimeout(500);
-            
-            // Verify the interface is still responsive
-            await expect(app.currentNoteSplit).toBeVisible();
-        }
-        
-        // Test keyboard navigation
-        await page.keyboard.press('ArrowDown');
-        await page.waitForTimeout(100);
-        await page.keyboard.press('ArrowUp');
-        
-        expect(true).toBe(true);
-    });
+        try {
+            const uniqueSuffix = `${Date.now()}`;
+            const codeNote = await createNote(request, {
+                parentNoteId: "root",
+                title: `QA Code ${uniqueSuffix}`,
+                type: "code",
+                mime: "text/plain",
+                content: "const archivist = 'Becca';\nconsole.log(archivist);"
+            });
+            const mermaidNote = await createNote(request, {
+                parentNoteId: "root",
+                title: `QA Mermaid ${uniqueSuffix}`,
+                type: "mermaid",
+                content: "flowchart TD\nA[Archivist] --> B[Codex]"
+            });
+            const textNote = await createLoreNote(request, {
+                parentNoteId: "root",
+                title: `QA Rich Text ${uniqueSuffix}`,
+                loreType: "event",
+                content: [
+                    "<h1>Chronicle</h1>",
+                    "<p><strong>Rendered</strong> rich text body.</p>",
+                    '<section class="gm-only">Hidden lore</section>'
+                ].join("")
+            });
 
-    test("Should handle LLM panel if available", async ({ page, context }) => {
-        const app = new App(page, context);
-        await app.goto();
+            createdNoteIds.push(codeNote.noteId, mermaidNote.noteId, textNote.noteId);
 
-        // Look for LLM chat panel elements
-        const llmPanel = page.locator('.note-context-chat-container, .llm-chat-panel');
-        
-        if (await llmPanel.count() > 0 && await llmPanel.isVisible()) {
-            // Check for chat input
-            const chatInput = page.locator('.note-context-chat-input');
-            await expect(chatInput).toBeVisible();
-            
-            // Check for send button
-            const sendButton = page.locator('.note-context-chat-send-button');
-            await expect(sendButton).toBeVisible();
-            
-            // Check for chat messages area
-            const messagesArea = page.locator('.note-context-chat-messages');
-            await expect(messagesArea).toBeVisible();
-        } else {
-            console.log("LLM chat panel not visible in current view");
+            const codeDetails = await getJson<CreatedNote>(request, `/etapi/notes/${codeNote.noteId}`);
+            const mermaidDetails = await getJson<CreatedNote>(request, `/etapi/notes/${mermaidNote.noteId}`);
+            const textDetails = await getJson<CreatedNote>(request, `/etapi/notes/${textNote.noteId}`);
+
+            expect(codeDetails.type).toBe("code");
+            expect(codeDetails.mime).toBe("text/plain");
+            expect(await getNoteContent(request, codeNote.noteId)).toContain("const archivist = 'Becca';");
+
+            expect(mermaidDetails.type).toBe("mermaid");
+            expect(await getNoteContent(request, mermaidNote.noteId)).toContain("flowchart TD");
+            expect(await getNoteContent(request, mermaidNote.noteId)).toContain("Archivist");
+
+            expect(textDetails.type).toBe("text");
+            expect(await getNoteContent(request, textNote.noteId)).toContain("Rendered");
+            expect(await getNoteContent(request, textNote.noteId)).toContain("Hidden lore");
+        } finally {
+            await deleteNotes(request, createdNoteIds);
         }
     });
 
-    test("Should navigate to AI settings if needed", async ({ page, context }) => {
-        const app = new App(page, context);
-        await app.goto();
+    test("sanitizes hostile note titles on create", async ({ request }) => {
+        const createdNoteIds: string[] = [];
 
-        // Navigate to settings first
-        await app.goToSettings();
-        
-        // Wait for settings to load
-        await page.waitForTimeout(2000);
-        
-        // Try to navigate to AI settings using the URL
-        await page.goto('#root/_hidden/_options/_optionsAi');
-        await page.waitForTimeout(2000);
+        try {
+            const xssNote = await createNote(request, {
+                parentNoteId: "root",
+                title: "QA RTL \u202Ecod.exe <script>window.__qaXssExecuted='title'</script>",
+                type: "text",
+                content: [
+                    "<p>Visible paragraph</p>",
+                    "<script>window.__qaXssExecuted='script'</script>",
+                    '<img src="x" onerror="window.__qaXssExecuted=\'image\'">'
+                ].join("")
+            });
 
-        // Check if we're in some kind of settings page (more flexible check)
-        const settingsContent = page.locator('.note-split:not(.hidden-ext)');
-        await expect(settingsContent).toBeVisible({ timeout: 10000 });
-        
-        // Look for AI/LLM related content or just verify we're in settings
-        const hasAiContent = await page.locator('text="AI"').count() > 0 || 
-                           await page.locator('text="LLM"').count() > 0 ||
-                           await page.locator('text="AI features"').count() > 0;
-        
-        if (hasAiContent) {
-            console.log("Successfully found AI-related settings");
-        } else {
-            console.log("AI settings may not be configured, but navigation to settings works");
+            createdNoteIds.push(xssNote.noteId);
+
+            const storedNote = await getJson<NoteResponse>(request, `/etapi/notes/${xssNote.noteId}`);
+
+            expect(storedNote.title).not.toContain("<script");
+            expect(storedNote.title).toContain("QA RTL");
+            expect(await getNoteContent(request, xssNote.noteId)).toContain("Visible paragraph");
+        } finally {
+            await deleteNotes(request, createdNoteIds);
         }
-        
-        // Test passes if we can navigate to settings area
-        expect(true).toBe(true);
     });
 });
+
+async function createLoreNote(
+    request: APIRequestContext,
+    params: { parentNoteId: string; title: string; loreType: keyof typeof TEMPLATE_BY_LORE_TYPE; content: string }
+): Promise<CreatedNote> {
+    const note = await createNote(request, {
+        parentNoteId: params.parentNoteId,
+        title: params.title,
+        type: "text",
+        content: params.content
+    });
+
+    await addAttribute(request, {
+        noteId: note.noteId,
+        type: "label",
+        name: "lore",
+        value: ""
+    });
+    await addAttribute(request, {
+        noteId: note.noteId,
+        type: "label",
+        name: "loreType",
+        value: params.loreType
+    });
+    await addAttribute(request, {
+        noteId: note.noteId,
+        type: "relation",
+        name: "template",
+        value: TEMPLATE_BY_LORE_TYPE[params.loreType]
+    });
+
+    return note;
+}
+
+async function createNote(
+    request: APIRequestContext,
+    params: { parentNoteId: string; title: string; type: string; content: string; mime?: string }
+): Promise<CreatedNote> {
+    const response = await request.post(`${BASE_URL}/etapi/create-note`, {
+        data: params
+    });
+
+    expect(response.ok()).toBeTruthy();
+    const payload = await response.json() as { note: CreatedNote };
+    return payload.note;
+}
+
+async function addAttribute(request: APIRequestContext, attribute: NoteAttribute): Promise<CreatedAttribute> {
+    const response = await request.post(`${BASE_URL}/etapi/attributes`, {
+        data: attribute
+    });
+
+    expect(response.ok()).toBeTruthy();
+    return await response.json() as CreatedAttribute;
+}
+
+async function deleteNotes(request: APIRequestContext, noteIds: string[]) {
+    for (const noteId of [...noteIds].reverse()) {
+        await request.delete(`${BASE_URL}/etapi/notes/${noteId}`);
+    }
+}
+
+async function getJson<T>(request: APIRequestContext, path: string): Promise<T> {
+    const response = await request.get(`${BASE_URL}${path}`);
+    expect(response.ok()).toBeTruthy();
+    return await response.json() as T;
+}
+
+async function getNoteContent(request: APIRequestContext, noteId: string): Promise<string> {
+    const response = await request.get(`${BASE_URL}/etapi/notes/${noteId}/content`);
+    expect(response.ok()).toBeTruthy();
+    return await response.text();
+}

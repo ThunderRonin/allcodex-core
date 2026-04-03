@@ -181,6 +181,8 @@ function createNewNote(params: NoteParams): {
 
     if (params.title === null || params.title === undefined) {
         params.title = getNewNoteTitle(parentNote);
+    } else {
+        params.title = htmlSanitizer.sanitize(params.title);
     }
 
     if (params.content === null || params.content === undefined) {
