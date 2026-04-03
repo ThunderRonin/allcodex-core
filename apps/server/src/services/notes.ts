@@ -440,6 +440,10 @@ function checkImageAttachments(note: BNote, content: string) {
     };
 }
 
+function normalizePortalImageLinks(content: string) {
+    return content.replace(/src=["'][^"']*\/api\/lore\/([a-zA-Z0-9_]+)\/image["']/gi, 'src="api/images/$1/image"');
+}
+
 function findImageLinks(content: string, foundLinks: FoundLink[]) {
     const re = /src="[^"]*api\/images\/([a-zA-Z0-9_]+)\//g;
     let match;
@@ -691,6 +695,7 @@ function saveLinks(note: BNote, content: string | Buffer) {
     let forceFrontendReload = false;
 
     if (note.type === "text" && typeof content === "string") {
+        content = normalizePortalImageLinks(content);
         content = downloadImages(note.noteId, content);
         content = saveAttachments(note, content);
 
