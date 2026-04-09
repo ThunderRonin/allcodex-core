@@ -12,7 +12,7 @@ AllCodex is one piece of the AllKnower stack:
 |---------|------|------|
 | **AllCodex** (this repo) | Lore database server, ETAPI, share pages | [ThunderRonin/AllCodex](https://github.com/ThunderRonin/AllCodex) |
 | **AllCodex-Portal** | Web frontend for browsing and editing lore | [ThunderRonin/AllCodex-Portal](https://github.com/ThunderRonin/AllCodex-Portal) |
-| **AllKnower** | AI orchestrator: brain dump, consistency checks, relationship discovery | separate repo |
+| **AllKnower** | AI orchestrator: brain dump, consistency checks, relationship discovery | [ThunderRonin/Allknower](https://github.com/ThunderRonin/Allknower) |
 
 AllKnower calls AllCodex. The Portal calls AllCodex. AllCodex just serves data.
 
