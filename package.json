@@ -1,7 +1,7 @@
 {
   "name": "@allcodex/source",
   "version": "0.101.3",
-  "description": "AllCodex — AI-powered worldbuilding knowledge base",
+  "description": "AllCodex \u2014 AI-powered worldbuilding knowledge base",
   "directories": {
     "doc": "docs"
   },
@@ -57,7 +57,7 @@
     "vite-plugin-dts": "4.5.4",
     "vitest": "4.0.18"
   },
-  "license": "AGPL-3.0-only",
+  "license": "AGPL-3.0",
   "author": {
     "name": "Trilium Notes Team",
     "email": "contact@eliandoran.me",

@@ -10,5 +10,6 @@
   "devDependencies": {
     "@mdi/font": "7.4.47",
     "@phosphor-icons/web": "2.1.2"
-  }
+  },
+  "license": "AGPL-3.0"
 }

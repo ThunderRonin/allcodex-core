@@ -7,7 +7,7 @@
   "type": "module",
   "main": "./src/index.js",
   "gitHead": "05a29b450962bf05a8642bbd39446a1f679a96ba",
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/laurent22/joplin-turndown-plugin-gfm.git"

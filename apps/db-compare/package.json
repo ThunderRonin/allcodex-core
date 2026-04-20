@@ -12,5 +12,6 @@
   "scripts": {
     "dev": "tsx src/compare.ts",
     "build": "esbuild --platform=node --format=cjs --outdir=dist src/compare.ts"
-  }
+  },
+  "license": "AGPL-3.0"
 }
