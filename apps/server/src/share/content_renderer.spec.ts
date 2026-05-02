@@ -36,6 +36,31 @@ describe("content_renderer", () => {
             expect(result.content).toStrictEqual(content);
         });
 
+        it("renders a theme-song block ahead of shared article content", () => {
+            const note = buildShareNote({
+                content: "<p>The house band plays.</p>",
+                "#themeSongUrl": "https://open.spotify.com/track/5ChkMS8OtdzJeqyybCc9R5?si=abc"
+            });
+
+            const result = getContent(note);
+
+            expect(result.content).toContain('class="theme-song-card"');
+            expect(result.content).toContain("https://open.spotify.com/embed/track/5ChkMS8OtdzJeqyybCc9R5");
+            expect(result.content).toContain("<p>The house band plays.</p>");
+        });
+
+        it("omits invalid theme-song URLs from shared output", () => {
+            const note = buildShareNote({
+                content: "<p>Signal remains clean.</p>",
+                "#themeSongUrl": "javascript:alert(1)"
+            });
+
+            const result = getContent(note);
+
+            expect(result.content).not.toContain("theme-song-card");
+            expect(result.content).toContain("<p>Signal remains clean.</p>");
+        });
+
         it("renders included notes", () => {
             buildShareNotes([
                 { id: "subnote1", content: `<p>Foo</p><div>Bar</div>` },

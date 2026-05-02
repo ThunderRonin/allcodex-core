@@ -63,6 +63,7 @@ type Labels = {
     // Note-type specific
     webViewSrc: string;
     "disabled:webViewSrc": string;
+    themeSongUrl: string;
     readOnly: boolean;
     mapType: string;
     mapRootNoteId: string;

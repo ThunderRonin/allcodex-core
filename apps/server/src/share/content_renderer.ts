@@ -16,6 +16,7 @@ import SBranch from "./shaca/entities/sbranch.js";
 import type SNote from "./shaca/entities/snote.js";
 import shaca from "./shaca/shaca.js";
 import shareRoot from "./share_root.js";
+import { renderThemeSongBlock } from "./theme_song.js";
 
 const templateCache: Map<string, string> = new Map();
 
@@ -214,7 +215,9 @@ function renderText(result: Result, note: SNote | BNote) {
     // Expand {{variableName}} world variables from the note labeled #worldVariables.
     applyWorldVariables(document);
 
-    result.isEmpty = document.textContent?.trim().length === 0 && document.querySelectorAll("img").length === 0;
+    const themeSongBlock = renderThemeSongBlock(note.getLabelValue("themeSongUrl"), note.title);
+    const documentIsEmpty = document.textContent?.trim().length === 0 && document.querySelectorAll("img").length === 0;
+    result.isEmpty = !themeSongBlock && documentIsEmpty;
 
     const getNote: GetNoteFunction = note instanceof BNote
         ? (noteId: string) => becca.getNote(noteId)
@@ -242,7 +245,7 @@ function renderText(result: Result, note: SNote | BNote) {
             }
         }
 
-        result.content = document.innerHTML ?? "";
+        result.content = `${themeSongBlock ?? ""}${document.innerHTML ?? ""}`;
 
         if (note.hasLabel("shareIndex")) {
             renderIndex(result);
