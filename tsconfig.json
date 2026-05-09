@@ -25,15 +25,6 @@
       "path": "./packages/express-partial-content"
     },
     {
-      "path": "./packages/highlightjs"
-    },
-    {
-      "path": "./packages/share-theme"
-    },
-    {
-      "path": "./packages/pdfjs-viewer"
-    },
-    {
       "path": "./scripts"
     }
   ]

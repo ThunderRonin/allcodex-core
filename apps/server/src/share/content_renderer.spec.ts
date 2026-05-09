@@ -49,6 +49,19 @@ describe("content_renderer", () => {
             expect(result.content).toContain("<p>The house band plays.</p>");
         });
 
+        it("renders a theme-song block from trusted Spotify embed iframe HTML", () => {
+            const note = buildShareNote({
+                content: "<p>The house band plays.</p>",
+                "#themeSongUrl": '<iframe src="https://open.spotify.com/embed/track/7j43FohbLVulScL7S9sQZk?utm_source=generator&theme=0"></iframe>'
+            });
+
+            const result = getContent(note);
+
+            expect(result.content).toContain('class="theme-song-card"');
+            expect(result.content).toContain("https://open.spotify.com/embed/track/7j43FohbLVulScL7S9sQZk");
+            expect(result.content).toContain("<p>The house band plays.</p>");
+        });
+
         it("omits invalid theme-song URLs from shared output", () => {
             const note = buildShareNote({
                 content: "<p>Signal remains clean.</p>",
