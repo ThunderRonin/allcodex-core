@@ -1,6 +1,7 @@
 import utils from "../services/utils.js";
 import SAttachment from "../share/shaca/entities/sattachment.js";
 import SAttribute from "../share/shaca/entities/sattribute.js";
+import SBranch from "../share/shaca/entities/sbranch.js";
 import SNote from "../share/shaca/entities/snote.js";
 import shaca from "../share/shaca/shaca.js";
 
@@ -89,7 +90,7 @@ export function buildShareNote(noteDef: NoteDefinition) {
         for (const childDef of noteDef.children) {
             const childNote = buildShareNote(childDef);
 
-            // TODO: Create corresponding SBranch.
+            new SBranch([utils.randomString(12), childNote.noteId, note.noteId, "", "", false]);
         }
     }
 

@@ -125,6 +125,10 @@ function renderIndex(result: Result) {
     const rootNote = shaca.getNote(shareRoot.SHARE_ROOT_NOTE_ID);
 
     for (const childNote of rootNote.getChildNotes()) {
+        if (childNote.isProtected || childNote.hasLabel("draft") || childNote.hasLabel("gmOnly")) {
+            continue;
+        }
+
         const isExternalLink = childNote.hasLabel("shareExternalLink");
         const href = isExternalLink ? childNote.getLabelValue("shareExternalLink") : `./${childNote.shareId}`;
         const target = isExternalLink ? `target="_blank" rel="noopener noreferrer"` : "";
