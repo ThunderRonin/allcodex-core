@@ -1,6 +1,6 @@
 import type BBranch from "../../../becca/entities/bbranch.js";
 import type BNote from "../../../becca/entities/bnote.js";
-import NoteMeta from "../../meta/note_meta"
+import NoteMeta from "../../meta/note_meta.js";
 import { ZipExportProvider } from "./abstract_provider.js"
 import mdService from "../markdown.js";
 
