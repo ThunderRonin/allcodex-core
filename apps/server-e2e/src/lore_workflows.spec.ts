@@ -216,7 +216,11 @@ test.describe("AllCodex Lore Workflows", () => {
 
             expect(storedNote.title).not.toContain("<script");
             expect(storedNote.title).toContain("QA RTL");
-            expect(await getNoteContent(request, xssNote.noteId)).toContain("Visible paragraph");
+
+            const storedContent = await getNoteContent(request, xssNote.noteId);
+            expect(storedContent).toContain("Visible paragraph");
+            expect(storedContent).not.toContain("<script");
+            expect(storedContent).not.toContain("onerror");
         } finally {
             await deleteNotes(request, createdNoteIds);
         }

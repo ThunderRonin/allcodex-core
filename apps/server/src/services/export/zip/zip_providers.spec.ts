@@ -97,9 +97,11 @@ describe("HtmlExportProvider#prepareContent", () => {
         );
         const noteMeta = makeNoteMeta({ format: "html", notePath: ["root"] });
 
-        provider.prepareContent("Title", "<p>ORIGINAL</p>", noteMeta);
+        const result = provider.prepareContent("Title", "<p>ORIGINAL</p>", noteMeta);
 
         expect(rewriteFn).toHaveBeenCalled();
+        expect(result).toContain("REWRITTEN");
+        expect(result).not.toContain("ORIGINAL");
     });
 
     it("throws when notePath is missing for bare HTML content", () => {
@@ -134,9 +136,7 @@ describe("MarkdownExportProvider#prepareContent", () => {
         // The HTML-to-markdown conversion is a pass-through for plain text.
         const result = provider.prepareContent("My Note", "Some text content.", noteMeta) as string;
 
-        // Should start with a heading after toMarkdown + prepend logic
-        // (markdown.toMarkdown on plain text may vary, so assert heading presence)
-        expect(typeof result).toBe("string");
+        expect(result).toContain("# My Note");
     });
 
     it("passes through non-markdown format content unchanged", () => {
@@ -163,9 +163,10 @@ describe("MarkdownExportProvider#prepareContent", () => {
         const provider = new MarkdownExportProvider(makeProviderData({ rewriteFn }));
         const noteMeta = makeNoteMeta({ format: "markdown" });
 
-        provider.prepareContent("Title", "some content", noteMeta);
+        const result = provider.prepareContent("Title", "some content", noteMeta);
 
         expect(rewriteFn).toHaveBeenCalled();
+        expect(result).toContain("# Title");
     });
 
     it("accepts optional _note and _branch params without affecting output", () => {
