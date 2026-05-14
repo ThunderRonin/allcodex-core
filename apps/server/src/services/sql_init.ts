@@ -213,8 +213,12 @@ function initializeDb() {
     cls.init(initDbConnection);
 
     dbReady.then(() => {
-        if (password.autoSetFromEnv()) {
-            log.info("Password auto-set from ALLCODEX_BOOTSTRAP_PASSWORD environment variable.");
+        try {
+            if (password.autoSetFromEnv()) {
+                log.info("Password auto-set from ALLCODEX_BOOTSTRAP_PASSWORD environment variable.");
+            }
+        } catch (e) {
+            log.error(`Failed to auto-set password from ALLCODEX_BOOTSTRAP_PASSWORD: ${e}`);
         }
 
         if (config.General && config.General.noBackup === true) {
