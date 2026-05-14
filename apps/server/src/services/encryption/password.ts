@@ -77,9 +77,22 @@ function resetPassword() {
     };
 }
 
+function autoSetFromEnv(): boolean {
+    const envPassword = process.env.ALLCODEX_BOOTSTRAP_PASSWORD;
+    if (!envPassword) return false;
+    if (isPasswordSet()) return false;
+    if (envPassword.length < 4) {
+        console.warn("ALLCODEX_BOOTSTRAP_PASSWORD is too short (min 4 chars). Skipping auto-set.");
+        return false;
+    }
+    setPassword(envPassword);
+    return true;
+}
+
 export default {
     isPasswordSet,
     changePassword,
     setPassword,
-    resetPassword
+    resetPassword,
+    autoSetFromEnv
 };

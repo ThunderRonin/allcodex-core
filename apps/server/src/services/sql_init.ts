@@ -213,6 +213,10 @@ function initializeDb() {
     cls.init(initDbConnection);
 
     dbReady.then(() => {
+        if (password.autoSetFromEnv()) {
+            log.info("Password auto-set from ALLCODEX_BOOTSTRAP_PASSWORD environment variable.");
+        }
+
         if (config.General && config.General.noBackup === true) {
             log.info("Disabling scheduled backups.");
 
