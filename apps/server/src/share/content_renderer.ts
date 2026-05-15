@@ -130,7 +130,8 @@ function renderIndex(result: Result) {
         }
 
         const isExternalLink = childNote.hasLabel("shareExternalLink");
-        const href = isExternalLink ? childNote.getLabelValue("shareExternalLink") : `./${childNote.shareId}`;
+        const rawHref = childNote.getLabelValue("shareExternalLink") ?? "";
+        const href = isExternalLink ? escapeHtml(sanitizeUrl(rawHref)) : `./${childNote.shareId}`;
         const target = isExternalLink ? `target="_blank" rel="noopener noreferrer"` : "";
         result.content += `<li><a class="${childNote.type}" href="${href}" ${target}>${childNote.escapedTitle}</a></li>`;
     }
@@ -281,7 +282,8 @@ function handleAttachmentLink(linkEl: HTMLElement, href: string, getNote: GetNot
         const linkedNote = getNote(noteId);
         if (linkedNote) {
             const isExternalLink = linkedNote.hasLabel("shareExternalLink");
-            const href = isExternalLink ? linkedNote.getLabelValue("shareExternalLink") : `./${linkedNote.shareId}`;
+            const rawHref = linkedNote.getLabelValue("shareExternalLink") ?? "";
+            const href = isExternalLink ? sanitizeUrl(rawHref) : `./${linkedNote.shareId}`;
             if (href) {
                 linkEl.setAttribute("href", href);
             }
