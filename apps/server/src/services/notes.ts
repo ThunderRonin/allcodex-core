@@ -27,6 +27,7 @@ import request from "./request.js";
 import revisionService from "./revisions.js";
 import sql from "./sql.js";
 import type TaskContext from "./task_context.js";
+import cloningService from "./cloning.js";
 import ws from "./ws.js";
 
 interface FoundLink {
@@ -1082,6 +1083,27 @@ function getNoteIdMapping(origNote: BNote) {
     return noteIdMapping;
 }
 
+function findBookmarks() {
+    const bookmarkParent = becca.getNote("_lbBookmarks");
+
+    if (!bookmarkParent) {
+        return [];
+    }
+
+    return bookmarkParent.getChildNotes().map((note) => ({
+        noteId: note.noteId,
+        title: note.title
+    }));
+}
+
+function addBookmark(noteId: string) {
+    return cloningService.cloneNoteToParentNote(noteId, "_lbBookmarks");
+}
+
+function removeBookmark(noteId: string) {
+    return cloningService.ensureNoteIsAbsentFromParent(noteId, "_lbBookmarks");
+}
+
 export default {
     createNewNote,
     createNewNoteWithTarget,
@@ -1094,5 +1116,8 @@ export default {
     triggerNoteTitleChanged,
     saveRevisionIfNeeded,
     downloadImages,
-    asyncPostProcessContent
+    asyncPostProcessContent,
+    findBookmarks,
+    addBookmark,
+    removeBookmark
 };
