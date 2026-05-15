@@ -19,6 +19,7 @@ import sql from "../../sql.js";
 import scriptService from "../../script.js";
 import striptags from "striptags";
 import protectedSessionService from "../../protected_session.js";
+import optionService from "../../options.js";
 
 export interface SearchNoteResult {
     searchResultNoteIds: string[];
@@ -53,7 +54,8 @@ function searchFromNote(note: BNote): SearchNoteResult {
             orderDirection: note.getLabelValue("orderDirection") || undefined,
             limit: parseInt(note.getLabelValue("limit") || "0", 10),
             debug: note.hasLabel("debug"),
-            fuzzyAttributeSearch: false
+            fuzzyAttributeSearch: false,
+            enableFuzzyMatching: optionService.getOptionBool("enableFuzzySearch")
         });
 
         searchResultNoteIds = findResultsWithQuery(searchString, searchContext).map((sr) => sr.noteId);
@@ -650,7 +652,8 @@ function searchNotesForAutocomplete(query: string, fastSearch: boolean = true) {
         includeHiddenNotes: true,
         fuzzyAttributeSearch: true,
         ignoreInternalAttributes: true,
-        ancestorNoteId: hoistedNoteService.isHoistedInHiddenSubtree() ? "root" : hoistedNoteService.getHoistedNoteId()
+        ancestorNoteId: hoistedNoteService.isHoistedInHiddenSubtree() ? "root" : hoistedNoteService.getHoistedNoteId(),
+        enableFuzzyMatching: optionService.getOptionBool("enableFuzzySearch")
     });
 
     const allSearchResults = findResultsWithQuery(query, searchContext);

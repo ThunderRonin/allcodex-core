@@ -46,7 +46,7 @@ class SearchContext {
         this.debug = params.debug;
         this.debugInfo = null;
         this.fuzzyAttributeSearch = !!params.fuzzyAttributeSearch;
-        this.enableFuzzyMatching = true; // Default to true for backward compatibility
+        this.enableFuzzyMatching = params.enableFuzzyMatching ?? true; // Default to true for backward compatibility
         this.highlightedTokens = [];
         this.originalQuery = "";
         this.fulltextQuery = ""; // complete fulltext part
