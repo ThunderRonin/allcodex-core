@@ -221,7 +221,8 @@ describe("content_renderer", () => {
             const note = buildShareNote({
                 id: "pdfNote123",
                 type: "file",
-                mime: "application/pdf"
+                mime: "application/pdf",
+                content: ""
             });
             const result = getContent(note);
             expect(result.content).toContain('src="/pdfjs/web/viewer.html?file=/share/api/notes/pdfNote123/view"');

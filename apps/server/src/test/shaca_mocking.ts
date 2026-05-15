@@ -65,7 +65,7 @@ export function buildShareNote(noteDef: NoteDefinition) {
     shaca.notes[note.noteId] = note;
 
     // Handle content
-    if (noteDef.content) {
+    if (noteDef.content !== undefined) {
         note.getContent = () => {
             if (noteDef.isProtected) return undefined;
             return noteDef.content;

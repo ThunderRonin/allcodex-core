@@ -214,13 +214,264 @@ test.describe("AllCodex Lore Workflows", () => {
 
             const storedNote = await getJson<NoteResponse>(request, `/etapi/notes/${xssNote.noteId}`);
 
+            // Core sanitizes titles at write time (html_sanitizer.sanitize in notes.ts)
             expect(storedNote.title).not.toContain("<script");
             expect(storedNote.title).toContain("QA RTL");
 
+            // Core stores content verbatim \u2014 sanitization is Portal's responsibility
             const storedContent = await getNoteContent(request, xssNote.noteId);
             expect(storedContent).toContain("Visible paragraph");
-            expect(storedContent).not.toContain("<script");
-            expect(storedContent).not.toContain("onerror");
+            expect(storedContent).toContain("<script");
+            expect(storedContent).toContain("onerror");
+        } finally {
+            await deleteNotes(request, createdNoteIds);
+        }
+    });
+    test("bookmark CRUD lifecycle", async ({ request }) => {
+        const createdNoteIds: string[] = [];
+
+        try {
+            const note = await createNote(request, {
+                parentNoteId: "root",
+                title: `QA Bookmark Target ${Date.now()}`,
+                type: "text",
+                content: "<p>Bookmarkable lore entry.</p>"
+            });
+            createdNoteIds.push(note.noteId);
+
+            // Initially no bookmarks for this note
+            const before = await getJson<Array<{ noteId: string; title: string }>>(request, "/etapi/bookmarks");
+            const hadBookmark = before.some((b) => b.noteId === note.noteId);
+            expect(hadBookmark).toBe(false);
+
+            // Add bookmark
+            const addRes = await request.post(`${BASE_URL}/etapi/bookmarks/${note.noteId}`);
+            expect(addRes.status()).toBe(201);
+            const addBody = await addRes.json();
+            expect(addBody.success).toBe(true);
+
+            // Verify bookmark appears in list
+            const after = await getJson<Array<{ noteId: string; title: string }>>(request, "/etapi/bookmarks");
+            expect(after.some((b) => b.noteId === note.noteId)).toBe(true);
+
+            // Remove bookmark
+            const delRes = await request.delete(`${BASE_URL}/etapi/bookmarks/${note.noteId}`);
+            expect(delRes.status()).toBe(204);
+
+            // Verify removed
+            const final = await getJson<Array<{ noteId: string; title: string }>>(request, "/etapi/bookmarks");
+            expect(final.some((b) => b.noteId === note.noteId)).toBe(false);
+
+            // Idempotent delete — should still return 204
+            const delAgain = await request.delete(`${BASE_URL}/etapi/bookmarks/${note.noteId}`);
+            expect(delAgain.status()).toBe(204);
+        } finally {
+            await deleteNotes(request, createdNoteIds);
+        }
+    });
+
+    test("search finds notes by title and label", async ({ request }) => {
+        const createdNoteIds: string[] = [];
+
+        try {
+            const uniqueTag = `qatoken${Date.now()}`;
+            const note = await createLoreNote(request, {
+                parentNoteId: "root",
+                title: `QA Searchable ${uniqueTag}`,
+                loreType: "character",
+                content: "<p>A discoverable character.</p>"
+            });
+            createdNoteIds.push(note.noteId);
+
+            // Search by title substring
+            const titleSearch = await getJson<SearchResponse>(
+                request,
+                `/etapi/notes?search=${encodeURIComponent(uniqueTag)}`
+            );
+            expect(titleSearch.results.length).toBeGreaterThanOrEqual(1);
+            expect(titleSearch.results.some((r: any) => r.noteId === note.noteId)).toBe(true);
+
+            // Search by label
+            const labelSearch = await getJson<SearchResponse>(
+                request,
+                `/etapi/notes?search=${encodeURIComponent("#loreType = character")}`
+            );
+            expect(labelSearch.results.some((r: any) => r.noteId === note.noteId)).toBe(true);
+
+            // Search with fastSearch (fuzzy opt-in)
+            const fastSearch = await getJson<SearchResponse>(
+                request,
+                `/etapi/notes?search=${encodeURIComponent(uniqueTag)}&fastSearch=true`
+            );
+            expect(fastSearch.results).toBeDefined();
+        } finally {
+            await deleteNotes(request, createdNoteIds);
+        }
+    });
+
+    test("content update via PUT and revision list endpoint", async ({ request }) => {
+        const createdNoteIds: string[] = [];
+
+        try {
+            const note = await createNote(request, {
+                parentNoteId: "root",
+                title: `QA Content Update ${Date.now()}`,
+                type: "text",
+                content: "<p>Original content.</p>"
+            });
+            createdNoteIds.push(note.noteId);
+
+            // Update content (express.text() only parses text/plain)
+            const putRes = await request.put(`${BASE_URL}/etapi/notes/${note.noteId}/content`, {
+                data: "<p>Updated content.</p>",
+                headers: { "Content-Type": "text/plain" }
+            });
+            expect(putRes.ok()).toBeTruthy();
+
+            // Verify updated content
+            const updatedContent = await getNoteContent(request, note.noteId);
+            expect(updatedContent).toContain("Updated content.");
+            expect(updatedContent).not.toContain("Original content.");
+
+            // Revisions endpoint works (note: brand-new notes skip revision creation
+            // due to revisionSnapshotTimeInterval check in saveRevisionIfNeeded)
+            const revisions = await getJson<Array<{
+                revisionId: string;
+                noteId: string;
+                title: string;
+                type: string;
+            }>>(request, `/etapi/notes/${note.noteId}/revisions`);
+            expect(Array.isArray(revisions)).toBe(true);
+        } finally {
+            await deleteNotes(request, createdNoteIds);
+        }
+    });
+
+    test("PATCH updates note title and type", async ({ request }) => {
+        const createdNoteIds: string[] = [];
+
+        try {
+            const note = await createNote(request, {
+                parentNoteId: "root",
+                title: `QA Patchable ${Date.now()}`,
+                type: "text",
+                content: "<p>Will be patched.</p>"
+            });
+            createdNoteIds.push(note.noteId);
+
+            // PATCH title
+            const patchRes = await request.patch(`${BASE_URL}/etapi/notes/${note.noteId}`, {
+                data: { title: "QA Patched Title" }
+            });
+            expect(patchRes.ok()).toBeTruthy();
+
+            const patched = await getJson<NoteResponse>(request, `/etapi/notes/${note.noteId}`);
+            expect(patched.title).toBe("QA Patched Title");
+
+            // Content unchanged
+            const content = await getNoteContent(request, note.noteId);
+            expect(content).toContain("Will be patched.");
+        } finally {
+            await deleteNotes(request, createdNoteIds);
+        }
+    });
+
+    test("branch operations: clone note to second parent", async ({ request }) => {
+        const createdNoteIds: string[] = [];
+
+        try {
+            const uniqueSuffix = `${Date.now()}`;
+            const parent1 = await createNote(request, {
+                parentNoteId: "root",
+                title: `QA Parent1 ${uniqueSuffix}`,
+                type: "text",
+                content: ""
+            });
+            const parent2 = await createNote(request, {
+                parentNoteId: "root",
+                title: `QA Parent2 ${uniqueSuffix}`,
+                type: "text",
+                content: ""
+            });
+            const child = await createNote(request, {
+                parentNoteId: parent1.noteId,
+                title: `QA Child ${uniqueSuffix}`,
+                type: "text",
+                content: "<p>Shared child note.</p>"
+            });
+            createdNoteIds.push(child.noteId, parent2.noteId, parent1.noteId);
+
+            // Clone child to parent2
+            const branchRes = await request.post(`${BASE_URL}/etapi/branches`, {
+                data: {
+                    noteId: child.noteId,
+                    parentNoteId: parent2.noteId
+                }
+            });
+            expect(branchRes.ok()).toBeTruthy();
+            const branch = await branchRes.json();
+            expect(branch.branchId).toBeTruthy();
+            expect(branch.parentNoteId).toBe(parent2.noteId);
+
+            // Verify child now has two parents
+            const childNote = await getJson<{ parentNoteIds: string[] }>(
+                request,
+                `/etapi/notes/${child.noteId}`
+            );
+            expect(childNote.parentNoteIds).toContain(parent1.noteId);
+            expect(childNote.parentNoteIds).toContain(parent2.noteId);
+        } finally {
+            await deleteNotes(request, createdNoteIds);
+        }
+    });
+
+    test("note export returns valid zip", async ({ request }) => {
+        const createdNoteIds: string[] = [];
+
+        try {
+            const note = await createNote(request, {
+                parentNoteId: "root",
+                title: `QA Export ${Date.now()}`,
+                type: "text",
+                content: "<p>Exportable content.</p>"
+            });
+            createdNoteIds.push(note.noteId);
+
+            // Valid formats: html, markdown, share — all produce zip archives
+            const exportRes = await request.get(
+                `${BASE_URL}/etapi/notes/${note.noteId}/export`,
+                { params: { format: "html" } }
+            );
+            expect(exportRes.ok()).toBeTruthy();
+
+            const body = await exportRes.body();
+            // ZIP magic bytes: PK\x03\x04
+            expect(body[0]).toBe(0x50); // P
+            expect(body[1]).toBe(0x4B); // K
+        } finally {
+            await deleteNotes(request, createdNoteIds);
+        }
+    });
+
+    test("recent changes API returns history entries", async ({ request }) => {
+        const createdNoteIds: string[] = [];
+
+        try {
+            const note = await createNote(request, {
+                parentNoteId: "root",
+                title: `QA History ${Date.now()}`,
+                type: "text",
+                content: "<p>Fresh note for history.</p>"
+            });
+            createdNoteIds.push(note.noteId);
+
+            const history = await getJson<Array<{ noteId: string }>>(
+                request,
+                "/etapi/notes/history"
+            );
+            expect(Array.isArray(history)).toBe(true);
+            expect(history.length).toBeGreaterThan(0);
+            expect(history.some((h) => h.noteId === note.noteId)).toBe(true);
         } finally {
             await deleteNotes(request, createdNoteIds);
         }
