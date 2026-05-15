@@ -6,6 +6,13 @@
 
 // Migrations should be kept in descending order, so the latest migration is first.
 const MIGRATIONS: (SqlMigration | JsMigration)[] = [
+    {
+        version: 234,
+        sql: /*sql*/`
+            ALTER TABLE revisions ADD COLUMN description TEXT NOT NULL DEFAULT '';
+            ALTER TABLE revisions ADD COLUMN revisionSource TEXT NOT NULL DEFAULT 'manual';
+        `
+    },
     // Migrate geo map to collection
     {
         version: 233,

@@ -54,7 +54,9 @@ CREATE TABLE IF NOT EXISTS "revisions" (`revisionId`	TEXT NOT NULL PRIMARY KEY,
                                              `utcDateCreated` TEXT NOT NULL,
                                              `utcDateModified` TEXT NOT NULL,
                                              `dateLastEdited` TEXT NOT NULL,
-                                             `dateCreated` TEXT NOT NULL);
+                                             `dateCreated` TEXT NOT NULL,
+                                             `description` TEXT NOT NULL DEFAULT '',
+                                             `revisionSource` TEXT NOT NULL DEFAULT 'manual');
 CREATE TABLE IF NOT EXISTS "options"
 (
     name TEXT not null PRIMARY KEY,
