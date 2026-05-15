@@ -216,6 +216,21 @@ describe("content_renderer", () => {
         });
     });
 
+    describe("File note", () => {
+        it("renders PDF with root-absolute pdfjs viewer path", () => {
+            const note = buildShareNote({
+                id: "pdfNote123",
+                type: "file",
+                mime: "application/pdf"
+            });
+            const result = getContent(note);
+            expect(result.content).toContain('src="/pdfjs/web/viewer.html?file=/share/api/notes/pdfNote123/view"');
+            expect(result.content).toContain('class="pdf-view"');
+            // Ensure the old broken relative path is NOT present
+            expect(result.content).not.toContain('src="../pdfjs');
+        });
+    });
+
     it("suppresses draft note content", () => {
         const note = buildShareNote({ content: "<p>Secret draft</p>", "#draft": "" });
         const result = getContent(note);

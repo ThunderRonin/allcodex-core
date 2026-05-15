@@ -18,6 +18,8 @@ interface AttachementDefinition {
 interface NoteDefinition extends AttributeDefinitions, RelationDefinitions {
     id?: string | undefined;
     title?: string;
+    type?: string;
+    mime?: string;
     content?: string | Buffer<ArrayBufferLike>;
     children?: NoteDefinition[];
     attachments?: AttachementDefinition[];
@@ -54,8 +56,8 @@ export function buildShareNote(noteDef: NoteDefinition) {
     const note = new SNote([
         noteDef.id ?? utils.randomString(12),
         noteDef.title ?? "New note",
-        "text",
-        "text/html",
+        noteDef.type ?? "text",
+        noteDef.mime ?? "text/html",
         blobId,
         new Date().toUTCString(),   // utcDateModified
         !!noteDef.isProtected
