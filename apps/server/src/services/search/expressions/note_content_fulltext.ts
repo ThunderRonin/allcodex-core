@@ -11,14 +11,15 @@ import protectedSessionService from "../../protected_session.js";
 import striptags from "striptags";
 import { normalize } from "../../utils.js";
 import sql from "../../sql.js";
-import { 
-    normalizeSearchText, 
-    calculateOptimizedEditDistance, 
-    validateFuzzySearchTokens, 
+import {
+    normalizeSearchText,
+    calculateOptimizedEditDistance,
+    validateFuzzySearchTokens,
     validateAndPreprocessContent,
     fuzzyMatchWord,
-    FUZZY_SEARCH_CONFIG 
+    FUZZY_SEARCH_CONFIG
 } from "../utils/text_utils.js";
+import { extractSpreadsheetText } from "../utils/extract_spreadsheet_text.js";
 
 const ALLOWED_OPERATORS = new Set(["=", "!=", "*=*", "*=", "=*", "%=", "~=", "~*"]);
 
@@ -309,6 +310,8 @@ class NoteContentFulltextExp extends Expression {
             content = processMindmapContent(content);
         } else if (type === "canvas" && mime === "application/json") {
             content = processCanvasContent(content);
+        } else if (type === "code" && mime === "text/x-spreadsheet") {
+            content = extractSpreadsheetText(content);
         }
 
         return content.trim();
