@@ -501,6 +501,16 @@ export default function buildHiddenSubtreeTemplates() {
                     },
                     hideSubtreeAttributes,
                     {
+                        name: "label:mapWidth",
+                        type: "label",
+                        value: "promoted,alias=Map Width,single,number"
+                    },
+                    {
+                        name: "label:mapHeight",
+                        type: "label",
+                        value: "promoted,alias=Map Height,single,number"
+                    },
+                    {
                         name: "label:geolocation",
                         type: "label",
                         value: `promoted,alias=${t("hidden_subtree_templates.geolocation")},single,text`,
