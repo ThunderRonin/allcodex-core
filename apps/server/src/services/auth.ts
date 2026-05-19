@@ -13,6 +13,22 @@ import type { NextFunction, Request, Response } from "express";
 let noAuthentication = false;
 refreshAuth();
 
+function redirectUnauthenticated(req: Request, res: Response) {
+    // cannot use options.getOptionBool currently => it will throw an error on new installations
+    // TriliumNextTODO: look into potentially creating an getOptionBoolOrNull instead
+    const hasRedirectBareDomain = options.getOptionOrNull("redirectBareDomain") === "true";
+
+    if (hasRedirectBareDomain) {
+        // Check if any note has the #shareRoot label
+        const shareRootNotes = attributes.getNotesWithLabel("shareRoot");
+        if (shareRootNotes.length === 0) {
+            res.status(404).json({ message: "Share root not found. Please set up a note with #shareRoot label first." });
+            return;
+        }
+    }
+    res.redirect(hasRedirectBareDomain ? "share" : "login");
+}
+
 function checkAuth(req: Request, res: Response, next: NextFunction) {
     if (!sqlInit.isDbInitialized()) {
         return res.redirect('setup');
@@ -27,20 +43,7 @@ function checkAuth(req: Request, res: Response, next: NextFunction) {
         return;
     } else if (!req.session.loggedIn) {
         // check redirectBareDomain option first
-
-        // cannot use options.getOptionBool currently => it will throw an error on new installations
-        // TriliumNextTODO: look into potentially creating an getOptionBoolOrNull instead
-        const hasRedirectBareDomain = options.getOptionOrNull("redirectBareDomain") === "true";
-
-        if (hasRedirectBareDomain) {
-            // Check if any note has the #shareRoot label
-            const shareRootNotes = attributes.getNotesWithLabel("shareRoot");
-            if (shareRootNotes.length === 0) {
-                res.status(404).json({ message: "Share root not found. Please set up a note with #shareRoot label first." });
-                return;
-            }
-        }
-        res.redirect(hasRedirectBareDomain ? "share" : "login");
+        redirectUnauthenticated(req, res);
     } else if (currentTotpStatus !== lastAuthState.totpEnabled || currentSsoStatus !== lastAuthState.ssoEnabled) {
         req.session.destroy((err) => {
             if (err) console.error('Error destroying session:', err);

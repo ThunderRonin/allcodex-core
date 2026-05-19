@@ -53,50 +53,63 @@ function getTodaysMidnight() {
     return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
+/** Returns the effective retention-day count, or null if cleanup should be skipped entirely. */
+function resolveRetentionDays(): number | null {
+    const customRetentionDays = config.Logging.retentionDays;
+    if (customRetentionDays > 0) {
+        return customRetentionDays;
+    }
+    if (customRetentionDays <= -1) {
+        info(`Log cleanup: keeping all log files, as specified by configuration.`);
+        return null;
+    }
+    return LOGGING_DEFAULT_RETENTION_DAYS;
+}
+
+/** Reads LOG_DIR and returns stat-able log files, sorted oldest-first. */
+async function collectLogFiles(): Promise<Array<{name: string, mtime: Date, path: string}>> {
+    const files = await fs.promises.readdir(dataDir.LOG_DIR);
+    const logFiles: Array<{name: string, mtime: Date, path: string}> = [];
+
+    for (const file of files) {
+        // Security: Only process files matching our log pattern (trilium legacy + allcodex)
+        if (!/^(trilium|allcodex)-\d{4}-\d{2}-\d{2}\.log$/.test(file)) {
+            continue;
+        }
+
+        const filePath = path.join(dataDir.LOG_DIR, file);
+
+        // Security: Verify path stays within LOG_DIR
+        const resolvedPath = path.resolve(filePath);
+        const resolvedLogDir = path.resolve(dataDir.LOG_DIR);
+        if (!resolvedPath.startsWith(resolvedLogDir + path.sep)) {
+            continue;
+        }
+
+        try {
+            const stats = await fs.promises.stat(filePath);
+            logFiles.push({ name: file, mtime: stats.mtime, path: filePath });
+        } catch (err) {
+            // Skip files we can't stat
+        }
+    }
+
+    // Sort by modification time (oldest first)
+    logFiles.sort((a, b) => a.mtime.getTime() - b.mtime.getTime());
+    return logFiles;
+}
+
 async function cleanupOldLogFiles() {
     try {
-        // Get retention days from environment or options
-        let retentionDays = LOGGING_DEFAULT_RETENTION_DAYS;
-        const customRetentionDays = config.Logging.retentionDays;
-        if (customRetentionDays > 0) {
-            retentionDays = customRetentionDays;
-        } else if (customRetentionDays <= -1){
-            info(`Log cleanup: keeping all log files, as specified by configuration.`);
-            return
+        const retentionDays = resolveRetentionDays();
+        if (retentionDays === null) {
+            return;
         }
 
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
 
-        // Read all log files
-        const files = await fs.promises.readdir(dataDir.LOG_DIR);
-        const logFiles: Array<{name: string, mtime: Date, path: string}> = [];
-
-        for (const file of files) {
-            // Security: Only process files matching our log pattern (trilium legacy + allcodex)
-            if (!/^(trilium|allcodex)-\d{4}-\d{2}-\d{2}\.log$/.test(file)) {
-                continue;
-            }
-
-            const filePath = path.join(dataDir.LOG_DIR, file);
-
-            // Security: Verify path stays within LOG_DIR
-            const resolvedPath = path.resolve(filePath);
-            const resolvedLogDir = path.resolve(dataDir.LOG_DIR);
-            if (!resolvedPath.startsWith(resolvedLogDir + path.sep)) {
-                continue;
-            }
-
-            try {
-                const stats = await fs.promises.stat(filePath);
-                logFiles.push({ name: file, mtime: stats.mtime, path: filePath });
-            } catch (err) {
-                // Skip files we can't stat
-            }
-        }
-
-        // Sort by modification time (oldest first)
-        logFiles.sort((a, b) => a.mtime.getTime() - b.mtime.getTime());
+        const logFiles = await collectLogFiles();
 
         // Keep minimum number of files
         if (logFiles.length <= MINIMUM_FILES_TO_KEEP) {
