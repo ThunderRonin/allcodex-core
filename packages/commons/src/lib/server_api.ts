@@ -52,6 +52,8 @@ export interface RevisionPojo {
     utcDateModified?: string;
     content?: string | Buffer<ArrayBufferLike>;
     contentLength?: number;
+    description?: string;
+    revisionSource?: string;
 }
 
 export interface RecentChangeRow {

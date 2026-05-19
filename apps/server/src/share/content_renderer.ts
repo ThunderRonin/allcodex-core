@@ -16,6 +16,7 @@ import SBranch from "./shaca/entities/sbranch.js";
 import type SNote from "./shaca/entities/snote.js";
 import shaca from "./shaca/shaca.js";
 import shareRoot from "./share_root.js";
+import { renderThemeSongBlock } from "./theme_song.js";
 
 const templateCache: Map<string, string> = new Map();
 
@@ -124,8 +125,13 @@ function renderIndex(result: Result) {
     const rootNote = shaca.getNote(shareRoot.SHARE_ROOT_NOTE_ID);
 
     for (const childNote of rootNote.getChildNotes()) {
+        if (childNote.isProtected || childNote.hasLabel("draft") || childNote.hasLabel("gmOnly")) {
+            continue;
+        }
+
         const isExternalLink = childNote.hasLabel("shareExternalLink");
-        const href = isExternalLink ? childNote.getLabelValue("shareExternalLink") : `./${childNote.shareId}`;
+        const rawHref = childNote.getLabelValue("shareExternalLink") ?? "";
+        const href = isExternalLink ? escapeHtml(sanitizeUrl(rawHref)) : `./${childNote.shareId}`;
         const target = isExternalLink ? `target="_blank" rel="noopener noreferrer"` : "";
         result.content += `<li><a class="${childNote.type}" href="${href}" ${target}>${childNote.escapedTitle}</a></li>`;
     }
@@ -214,7 +220,9 @@ function renderText(result: Result, note: SNote | BNote) {
     // Expand {{variableName}} world variables from the note labeled #worldVariables.
     applyWorldVariables(document);
 
-    result.isEmpty = document.textContent?.trim().length === 0 && document.querySelectorAll("img").length === 0;
+    const themeSongBlock = renderThemeSongBlock(note.getLabelValue("themeSongUrl"), note.title);
+    const documentIsEmpty = document.textContent?.trim().length === 0 && document.querySelectorAll("img").length === 0;
+    result.isEmpty = !themeSongBlock && documentIsEmpty;
 
     const getNote: GetNoteFunction = note instanceof BNote
         ? (noteId: string) => becca.getNote(noteId)
@@ -242,7 +250,7 @@ function renderText(result: Result, note: SNote | BNote) {
             }
         }
 
-        result.content = document.innerHTML ?? "";
+        result.content = `${themeSongBlock ?? ""}${document.innerHTML ?? ""}`;
 
         if (note.hasLabel("shareIndex")) {
             renderIndex(result);
@@ -274,7 +282,8 @@ function handleAttachmentLink(linkEl: HTMLElement, href: string, getNote: GetNot
         const linkedNote = getNote(noteId);
         if (linkedNote) {
             const isExternalLink = linkedNote.hasLabel("shareExternalLink");
-            const href = isExternalLink ? linkedNote.getLabelValue("shareExternalLink") : `./${linkedNote.shareId}`;
+            const rawHref = linkedNote.getLabelValue("shareExternalLink") ?? "";
+            const href = isExternalLink ? sanitizeUrl(rawHref) : `./${linkedNote.shareId}`;
             if (href) {
                 linkEl.setAttribute("href", href);
             }
@@ -351,7 +360,7 @@ function renderImage(result: Result, note: SNote | BNote) {
 
 function renderFile(note: SNote | BNote, result: Result) {
     if (note.mime === "application/pdf") {
-        result.content = `<iframe class="pdf-view" src="../pdfjs/web/viewer.html?file=../../../share/api/notes/${note.noteId}/view"></iframe>`;
+        result.content = `<iframe class="pdf-view" src="/pdfjs/web/viewer.html?file=/share/api/notes/${note.noteId}/view"></iframe>`;
     } else {
         result.content = `<button type="button" onclick="location.href='api/notes/${note.noteId}/download'">Download file</button>`;
     }

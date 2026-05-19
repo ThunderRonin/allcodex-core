@@ -33,6 +33,8 @@ export interface RevisionRow {
     utcDateCreated: string;
     utcDateModified?: string;
     contentLength?: number;
+    description?: string;
+    revisionSource?: string;
 }
 
 export interface RecentNoteRow {

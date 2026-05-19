@@ -30,12 +30,42 @@ pnpm server:build
 ```
 
 ### Testing
+
+#### Unit Tests (vitest)
 ```bash
 pnpm test:all              # all tests (parallel + sequential)
 pnpm test:parallel          # tests that can run in parallel
 pnpm test:sequential        # server tests (sequential, shared DB)
-pnpm server:coverage        # coverage report
+pnpm server:coverage        # coverage report (v8)
 ```
+
+Coverage baseline (as of 2025-05-15): 45.43% statements, 39.84% branches, 50.24% functions, 45.74% lines across 87 test files (1028 tests, 18 skipped).
+
+Note: `@vitest/coverage-v8` must be pinned to the exact same version as vitest (4.0.18). Version mismatches break coverage collection.
+
+#### E2E Tests (Playwright)
+
+E2E tests live in `apps/server-e2e/src/lore_workflows.spec.ts` — all ETAPI-based, no browser UI tests. The Trilium client was removed; all former UI specs have been deleted.
+
+**Quick run (pre-started server):**
+```bash
+# Terminal 1: start server on port 8082
+cd apps/server
+TRILIUM_DATA_DIR=spec/db TRILIUM_PORT=8082 TRILIUM_INTEGRATION_TEST=memory \
+  TRILIUM_ENV=production node dist/main.cjs
+
+# Terminal 2: run e2e tests (TRILIUM_DOCKER=1 skips Playwright's webServer auto-start)
+cd apps/server-e2e
+TRILIUM_DOCKER=1 BASE_URL=http://127.0.0.1:8082 npx playwright test --project=chromium
+```
+
+**Why `TRILIUM_DOCKER=1`:** The Playwright config's `webServer` runs `pnpm start-prod-no-dir` which rebuilds on every launch (~5 min). Setting `TRILIUM_DOCKER=1` disables the webServer block so Playwright uses an already-running server.
+
+**Why not `pnpm start-prod-no-dir` directly:** It runs `pnpm build &&` every time, often exceeding Playwright's 5-minute webServer timeout. Pre-start the built server manually instead.
+
+**Auth in e2e:** `TRILIUM_INTEGRATION_TEST=memory` uses in-memory SQLite. The `noAuthentication` config option controls ETAPI auth bypass. Tests make raw HTTP requests without tokens.
+
+E2E test count: 11 tests covering lore CRUD, relationships, content types, XSS sanitization, bookmarks, search, content update, PATCH, branch cloning, export, and recent changes.
 
 ### Linting
 ```bash
@@ -104,6 +134,10 @@ Entities live in `apps/server/src/becca/entities/`:
 | `apps/server/src/share/content_renderer.ts` | Share page rendering (gmOnly, variables) |
 | `apps/server/src/assets/db/schema.sql` | Database schema |
 | `apps/server/etapi.openapi.yaml` | OpenAPI specification |
+| `apps/server-e2e/src/lore_workflows.spec.ts` | E2E tests (Playwright, ETAPI-only) |
+| `apps/server-e2e/playwright.config.ts` | E2E config (port 8082, chromium) |
+| `apps/server/src/test/shaca_mocking.ts` | Share cache mock helper for unit tests |
+| `apps/server/src/test/becca_mocking.ts` | Backend cache mock helper for unit tests |
 
 ## Database
 
@@ -115,8 +149,18 @@ Data directory defaults to `~/trilium-data` (will be renamed to `~/allcodex-data
 - ETAPI uses token-based authentication (create tokens via server options)
 - Per-note encryption with protected sessions
 - OpenID and TOTP support for login
-- HTML content is sanitized before rendering
+- **Title sanitization is server-side** — `html_sanitizer.sanitize()` runs on titles at write time (`services/notes.ts:139`). Script tags and RTL override chars are stripped.
+- **Content is stored verbatim** — Core does NOT sanitize note content. This is by design. Content sanitization is Portal's responsibility via `sanitizeLoreHtml()` / `sanitizePlayerView()` before rendering to browsers.
+- Share pages filter `#draft` and `#gmOnly` notes from both content and index listings (`content_renderer.ts`)
 - Share page access can be password-protected per subtree
+
+## Gotchas
+
+- **`express.text()` only parses `text/plain`** — sending `Content-Type: text/html` to ETAPI PUT `/notes/:id/content` results in `req.body = null`. Use `text/plain` for ETAPI content updates.
+- **Revisions skip brand-new notes** — `saveRevisionIfNeeded` checks `msSinceDateCreated >= revisionSnapshotTimeInterval`. Notes created within the interval window won't get a revision on first edit. This prevents revision spam during bulk operations like brain dump commits.
+- **Node version: 22.x required** — Node 26 breaks better-sqlite3 native bindings. Use `nvm use 22` or pin via `.nvmrc`.
+- **vitest workspace conflict** — Running `npx vitest run --coverage` from the repo root fails with `"different maxWorkers but same sequence.groupOrder"`. Use `pnpm server:coverage` (which uses `--filter server`) instead.
+- **`shaca_mocking.ts` content check** — Uses `noteDef.content !== undefined` (not truthiness) because empty string `""` is valid content for file/PDF notes.
 
 ## Common Tasks
 

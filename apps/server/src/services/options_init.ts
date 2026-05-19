@@ -225,7 +225,10 @@ const defaultOptions: DefaultOption[] = [
         ]),
         isSynced: true
     },
-    { name: "experimentalFeatures", value: "[]", isSynced: true }
+    { name: "experimentalFeatures", value: "[]", isSynced: true },
+
+    // Search
+    { name: "enableFuzzySearch", value: "true", isSynced: true }
 ];
 
 /**

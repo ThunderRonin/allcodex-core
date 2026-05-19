@@ -31,7 +31,7 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
         return "revisionId";
     }
     static get hashedProperties() {
-        return ["revisionId", "noteId", "title", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified", "blobId"];
+        return ["revisionId", "noteId", "title", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified", "blobId", "description", "revisionSource"];
     }
 
     revisionId?: string;
@@ -43,6 +43,8 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
     utcDateLastEdited?: string;
     contentLength?: number;
     content?: string | Buffer;
+    description!: string;
+    revisionSource!: string;
 
     constructor(row: RevisionRow, titleDecrypted = false) {
         super();
@@ -68,6 +70,8 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
         this.utcDateCreated = row.utcDateCreated;
         this.utcDateModified = row.utcDateModified;
         this.contentLength = row.contentLength;
+        this.description = row.description ?? "";
+        this.revisionSource = row.revisionSource ?? "manual";
     }
 
     getNote() {
@@ -199,6 +203,8 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
             utcDateLastEdited: this.utcDateLastEdited,
             utcDateCreated: this.utcDateCreated,
             utcDateModified: this.utcDateModified,
+            description: this.description,
+            revisionSource: this.revisionSource,
             content: this.content, // used when retrieving full note revision to frontend
             contentLength: this.contentLength
         } satisfies RevisionPojo;

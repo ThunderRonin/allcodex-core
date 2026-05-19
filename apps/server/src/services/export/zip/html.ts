@@ -2,6 +2,8 @@ import fs from "fs";
 import html from "html";
 import path from "path";
 
+import type BBranch from "../../../becca/entities/bbranch.js";
+import type BNote from "../../../becca/entities/bnote.js";
 import type NoteMeta from "../../meta/note_meta.js";
 import { escapeHtml, getResourceDir, isDev } from "../../utils";
 import { ZipExportProvider } from "./abstract_provider.js";
@@ -34,7 +36,7 @@ export default class HtmlExportProvider extends ZipExportProvider {
         metaFile.files.push(this.cssMeta);
     }
 
-    prepareContent(title: string, content: string | Buffer, noteMeta: NoteMeta): string | Buffer {
+    prepareContent(title: string, content: string | Buffer, noteMeta: NoteMeta, _note?: BNote, _branch?: BBranch): string | Buffer {
         if (noteMeta.format === "html" && typeof content === "string") {
             if (!content.substr(0, 100).toLowerCase().includes("<html") && !this.zipExportOptions?.skipHtmlTemplate) {
                 if (!noteMeta?.notePath?.length) {

@@ -407,21 +407,23 @@ async function exportToZip(taskContext: TaskContext<"export">, branch: BBranch, 
 
     provider.prepareMeta(metaFile);
 
+    function shouldKeepAttribute(attr: AttributeMeta, idMap: Record<string, NoteMeta>): boolean {
+        if (attr.type !== "relation") {
+            return true;
+        }
+        if (attr.value in idMap) {
+            return true;
+        }
+        // relations to "named" noteIds can be preserved
+        return attr.value === "root" || attr.value.startsWith("_");
+    }
+
     try {
         for (const noteMeta of Object.values(noteIdToMeta)) {
             // filter out relations which are not inside this export
-            noteMeta.attributes = (noteMeta.attributes || []).filter((attr) => {
-                if (attr.type !== "relation") {
-                    return true;
-                } else if (attr.value in noteIdToMeta) {
-                    return true;
-                } else if (attr.value === "root" || attr.value?.startsWith("_")) {
-                    // relations to "named" noteIds can be preserved
-                    return true;
-                } else {
-                    return false;
-                }
-            });
+            noteMeta.attributes = (noteMeta.attributes || []).filter(
+                (attr) => shouldKeepAttribute(attr, noteIdToMeta)
+            );
         }
 
         if (!rootMeta) {

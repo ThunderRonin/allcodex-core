@@ -11,14 +11,15 @@ import protectedSessionService from "../../protected_session.js";
 import striptags from "striptags";
 import { normalize } from "../../utils.js";
 import sql from "../../sql.js";
-import { 
-    normalizeSearchText, 
-    calculateOptimizedEditDistance, 
-    validateFuzzySearchTokens, 
+import {
+    normalizeSearchText,
+    calculateOptimizedEditDistance,
+    validateFuzzySearchTokens,
     validateAndPreprocessContent,
     fuzzyMatchWord,
-    FUZZY_SEARCH_CONFIG 
+    FUZZY_SEARCH_CONFIG
 } from "../utils/text_utils.js";
+import { extractSpreadsheetText } from "../utils/extract_spreadsheet_text.js";
 
 const ALLOWED_OPERATORS = new Set(["=", "!=", "*=*", "*=", "=*", "%=", "~=", "~*"]);
 
@@ -308,25 +309,9 @@ class NoteContentFulltextExp extends Expression {
         } else if (type === "mindMap" && mime === "application/json") {
             content = processMindmapContent(content);
         } else if (type === "canvas" && mime === "application/json") {
-            interface Element {
-                type: string;
-                text?: string; // Optional since not all objects have a `text` property
-                id: string;
-                [key: string]: any; // Other properties that may exist
-            }
-
-            const canvasContent = JSON.parse(content);
-            const elements = canvasContent.elements;
-
-            if (Array.isArray(elements)) {
-                const texts = elements
-                    .filter((element: Element) => element.type === "text" && element.text) // Filter for 'text' type elements with a 'text' property
-                    .map((element: Element) => element.text!); // Use `!` to assert `text` is defined after filtering
-
-                content = normalize(texts.join(" "));
-            } else {
-                content = "";
-            }
+            content = processCanvasContent(content);
+        } else if (type === "code" && mime === "text/x-spreadsheet") {
+            content = extractSpreadsheetText(content);
         }
 
         return content.trim();
@@ -548,6 +533,33 @@ export function processMindmapContent(content: string) {
     const topicsString = topicsArray.join(", ");
 
     return normalize(topicsString.toString());
+}
+
+function processCanvasContent(content: string) {
+    interface Element {
+        type: string;
+        text?: string;
+        id: string;
+        [key: string]: any;
+    }
+
+    let canvasContent;
+    try {
+        canvasContent = JSON.parse(content);
+    } catch {
+        return "";
+    }
+    if (!canvasContent || typeof canvasContent !== "object") return "";
+    const elements = canvasContent.elements;
+
+    if (Array.isArray(elements)) {
+        const texts = elements
+            .filter((element: Element) => element.type === "text" && element.text)
+            .map((element: Element) => element.text!);
+
+        return normalize(texts.join(" "));
+    }
+    return "";
 }
 
 export default NoteContentFulltextExp;

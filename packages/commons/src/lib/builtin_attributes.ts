@@ -67,6 +67,7 @@ export default [
     { type: "label", name: "shareCredentials" },
     { type: "label", name: "shareIndex" },
     { type: "label", name: "shareHtmlLocation" },
+    { type: "label", name: "themeSongUrl" },
     { type: "label", name: "displayRelations" },
     { type: "label", name: "hideRelations" },
     { type: "label", name: "titleTemplate", isDangerous: true },

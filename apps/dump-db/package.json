@@ -18,5 +18,6 @@
   "scripts": {
     "dev": "tsx src/main.ts",
     "build": "esbuild --platform=node --format=cjs --outdir=dist src/main.ts"
-  }
+  },
+  "license": "AGPL-3.0"
 }

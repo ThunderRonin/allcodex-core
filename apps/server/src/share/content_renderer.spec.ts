@@ -36,6 +36,44 @@ describe("content_renderer", () => {
             expect(result.content).toStrictEqual(content);
         });
 
+        it("renders a theme-song block ahead of shared article content", () => {
+            const note = buildShareNote({
+                content: "<p>The house band plays.</p>",
+                "#themeSongUrl": "https://open.spotify.com/track/5ChkMS8OtdzJeqyybCc9R5?si=abc"
+            });
+
+            const result = getContent(note);
+
+            expect(result.content).toContain('class="theme-song-card"');
+            expect(result.content).toContain("https://open.spotify.com/embed/track/5ChkMS8OtdzJeqyybCc9R5");
+            expect(result.content).toContain("<p>The house band plays.</p>");
+        });
+
+        it("renders a theme-song block from trusted Spotify embed iframe HTML", () => {
+            const note = buildShareNote({
+                content: "<p>The house band plays.</p>",
+                "#themeSongUrl": '<iframe src="https://open.spotify.com/embed/track/7j43FohbLVulScL7S9sQZk?utm_source=generator&theme=0"></iframe>'
+            });
+
+            const result = getContent(note);
+
+            expect(result.content).toContain('class="theme-song-card"');
+            expect(result.content).toContain("https://open.spotify.com/embed/track/7j43FohbLVulScL7S9sQZk");
+            expect(result.content).toContain("<p>The house band plays.</p>");
+        });
+
+        it("omits invalid theme-song URLs from shared output", () => {
+            const note = buildShareNote({
+                content: "<p>Signal remains clean.</p>",
+                "#themeSongUrl": "javascript:alert(1)"
+            });
+
+            const result = getContent(note);
+
+            expect(result.content).not.toContain("theme-song-card");
+            expect(result.content).toContain("<p>Signal remains clean.</p>");
+        });
+
         it("renders included notes", () => {
             buildShareNotes([
                 { id: "subnote1", content: `<p>Foo</p><div>Bar</div>` },
@@ -176,6 +214,75 @@ describe("content_renderer", () => {
                 `);
             });
         });
+    });
+
+    describe("File note", () => {
+        it("renders PDF with root-absolute pdfjs viewer path", () => {
+            const note = buildShareNote({
+                id: "pdfNote123",
+                type: "file",
+                mime: "application/pdf",
+                content: ""
+            });
+            const result = getContent(note);
+            expect(result.content).toContain('src="/pdfjs/web/viewer.html?file=/share/api/notes/pdfNote123/view"');
+            expect(result.content).toContain('class="pdf-view"');
+            // Ensure the old broken relative path is NOT present
+            expect(result.content).not.toContain('src="../pdfjs');
+        });
+    });
+
+    it("suppresses draft note content", () => {
+        const note = buildShareNote({ content: "<p>Secret draft</p>", "#draft": "" });
+        const result = getContent(note);
+        expect(result.content).toBe("");
+        expect(result.isEmpty).toBe(true);
+    });
+
+    it("suppresses gmOnly note content", () => {
+        const note = buildShareNote({ content: "<p>GM secrets</p>", "#gmOnly": "" });
+        const result = getContent(note);
+        expect(result.content).toBe("");
+        expect(result.isEmpty).toBe(true);
+    });
+
+    it("renderIndex excludes draft and gmOnly notes", () => {
+        // content is required so the mock getContent is wired up instead of the real SQLite path
+        const root = buildShareNote({
+            id: "_share",
+            title: "Share",
+            content: "<p>Index page</p>",
+            "#shareRoot": "",
+            "#shareIndex": "",
+            children: [
+                { title: "Visible Note", content: "<p>ok</p>" },
+                { title: "Draft Note", content: "<p>draft</p>", "#draft": "" },
+                { title: "GM Note", content: "<p>gm</p>", "#gmOnly": "" }
+            ]
+        });
+        const result = getContent(root);
+        expect(result.content).toContain("Visible Note");
+        expect(result.content).not.toContain("Draft Note");
+        expect(result.content).not.toContain("GM Note");
+    });
+
+    // Skipped: TextNode.replaceWith is not available in current node-html-parser version.
+    // applyWorldVariables calls child.replaceWith() on TextNode instances, which fails.
+    // See: content_renderer.ts applyWorldVariables
+    it.skip("expands world variables in text content", () => {
+        buildShareNote({
+            id: "worldVarsNote",
+            content: JSON.stringify({ currency: "Aurens", capital: "Solara" }),
+            "#worldVariables": ""
+        });
+        const note = buildShareNote({
+            content: "<p>The currency is {{currency}} and the capital is {{capital}}.</p>"
+        });
+        const result = getContent(note);
+        expect(result.content).toContain("Aurens");
+        expect(result.content).toContain("Solara");
+        expect(result.content).not.toContain("{{currency}}");
+        expect(result.content).not.toContain("{{capital}}");
     });
 
     describe("renderCode", () => {

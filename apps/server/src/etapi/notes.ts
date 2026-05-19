@@ -189,6 +189,32 @@ function register(router: Router) {
 
         res.json(attachments.map((attachment) => mappers.mapAttachmentToPojo(attachment)));
     });
+
+    eu.route(router, "get", "/etapi/bookmarks", (req, res, next) => {
+        res.json(noteService.findBookmarks());
+    });
+
+    eu.route(router, "post", "/etapi/bookmarks/:noteId", (req, res, next) => {
+        const note = eu.getAndCheckNote(req.params.noteId);
+        const result = noteService.addBookmark(note.noteId);
+
+        if (!result.success) {
+            throw new eu.EtapiError(400, "BOOKMARK_ERROR", result.message || "Failed to add bookmark.");
+        }
+
+        res.status(201).json(result);
+    });
+
+    eu.route(router, "delete", "/etapi/bookmarks/:noteId", (req, res, next) => {
+        const note = eu.getAndCheckNote(req.params.noteId);
+        const result = noteService.removeBookmark(note.noteId);
+
+        if (result && !result.success) {
+            throw new eu.EtapiError(400, "BOOKMARK_ERROR", result.message || "Failed to remove bookmark.");
+        }
+
+        res.sendStatus(204);
+    });
 }
 
 function parseSearchParams(req: Request) {

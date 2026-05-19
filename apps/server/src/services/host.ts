@@ -1,5 +1,4 @@
 import config from "./config.js";
-import config from "./config.js";
 
 function getHost() {
     const envHost = process.env.TRILIUM_HOST;

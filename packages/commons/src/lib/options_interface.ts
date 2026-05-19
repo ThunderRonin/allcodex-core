@@ -158,6 +158,9 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     aiSelectedProvider: string;
     seenCallToActions: string;
     experimentalFeatures: string;
+
+    // Search
+    enableFuzzySearch: boolean;
 }
 
 export type OptionNames = keyof OptionDefinitions;

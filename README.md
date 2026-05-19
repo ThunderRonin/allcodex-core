@@ -12,13 +12,13 @@ AllCodex is one piece of the AllKnower stack:
 |---------|------|------|
 | **AllCodex** (this repo) | Lore database server, ETAPI, share pages | [ThunderRonin/AllCodex](https://github.com/ThunderRonin/AllCodex) |
 | **AllCodex-Portal** | Web frontend for browsing and editing lore | [ThunderRonin/AllCodex-Portal](https://github.com/ThunderRonin/AllCodex-Portal) |
-| **AllKnower** | AI orchestrator: brain dump, consistency checks, relationship discovery | [ThunderRonin/Allknower](https://github.com/ThunderRonin/Allknower) |
+| **AllKnower** | AI orchestrator: brain dump, consistency checks, relationship discovery. *(Refer to AllKnower's `.env.example` for LLM model preferences)* | [ThunderRonin/Allknower](https://github.com/ThunderRonin/Allknower) |
 
 AllKnower calls AllCodex. The Portal calls AllCodex. AllCodex just serves data.
 
 ## Features
 
-- **8 lore templates** with promoted attributes: Character, Location, Faction, Creature, Event, Timeline, Manuscript, Statblock
+- **21 lore templates** with promoted attributes: Character, Location, Faction, Creature, Event, Timeline, Manuscript, Statblock, Item/Artifact, Spell/Magic, Building/Structure, Language/Script, Session, Quest, Scene, Organization, Race, Myth, Cosmology, Deity, Religion
 - **GM-only secrets**: tag notes with `#gmOnly` or wrap HTML sections in `class="gm-only"` to hide them from shared pages
 - **World variables**: write `{{currency}}` in a note and it expands to the value stored in your `#worldVariables` JSON note
 - **Public sharing**: render any subtree as a public website at `/share/`
