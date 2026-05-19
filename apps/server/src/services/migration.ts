@@ -123,7 +123,7 @@ function isDbUpToDate() {
 async function migrateIfNecessary() {
     const currentDbVersion = getDbVersion();
 
-    if (isNaN(currentDbVersion)) {
+    if (Number.isNaN(currentDbVersion)) {
         await crash(t("migration.invalid_db_version"));
         return;
     }
