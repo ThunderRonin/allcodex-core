@@ -51,7 +51,7 @@ export function extractSpreadsheetText(content: string): string {
         for (const row of parsed) {
             if (!Array.isArray(row)) continue;
             for (const cell of row) {
-                if (cell && typeof cell === "object" && "value" in cell && cell.value != null) {
+                if (cell && typeof cell === "object" && "value" in cell && cell.value != null && typeof cell.value !== "object") {
                     values.push(String(cell.value));
                 }
             }
@@ -66,7 +66,7 @@ export function extractSpreadsheetText(content: string): string {
                 for (const row of sheet.rows) {
                     if (!row || !Array.isArray(row.cells)) continue;
                     for (const cell of row.cells) {
-                        if (cell && typeof cell === "object" && "value" in cell && cell.value != null) {
+                        if (cell && typeof cell === "object" && "value" in cell && cell.value != null && typeof cell.value !== "object") {
                             values.push(String(cell.value));
                         }
                     }

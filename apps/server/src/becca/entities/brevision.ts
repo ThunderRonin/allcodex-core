@@ -31,7 +31,7 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
         return "revisionId";
     }
     static get hashedProperties() {
-        return ["revisionId", "noteId", "title", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified", "blobId"];
+        return ["revisionId", "noteId", "title", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified", "blobId", "description", "revisionSource"];
     }
 
     revisionId?: string;

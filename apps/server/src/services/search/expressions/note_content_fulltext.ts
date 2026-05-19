@@ -549,6 +549,7 @@ function processCanvasContent(content: string) {
     } catch {
         return "";
     }
+    if (!canvasContent || typeof canvasContent !== "object") return "";
     const elements = canvasContent.elements;
 
     if (Array.isArray(elements)) {
