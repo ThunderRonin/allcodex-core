@@ -92,7 +92,8 @@ export function buildShareNote(noteDef: NoteDefinition) {
         for (const childDef of noteDef.children) {
             const childNote = buildShareNote(childDef);
 
-            new SBranch([utils.randomString(12), childNote.noteId, note.noteId, "", "", false]);
+            // SBranch constructor registers itself in Shaca (side effect)
+            const _branch = new SBranch([utils.randomString(12), childNote.noteId, note.noteId, "", "", false]);
         }
     }
 
