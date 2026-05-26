@@ -1528,7 +1528,7 @@ class BNote extends AbstractBeccaEntity<BNote> {
         return !(this.noteId in this.becca.notes) || this.isBeingDeleted;
     }
 
-    saveRevision(): BRevision {
+    saveRevision(source?: string): BRevision {
         return sql.transactional(() => {
             let noteContent = this.getContent();
 
@@ -1544,7 +1544,8 @@ class BNote extends AbstractBeccaEntity<BNote> {
                     utcDateCreated: dateUtils.utcNowDateTime(),
                     utcDateModified: dateUtils.utcNowDateTime(),
                     dateLastEdited: this.dateModified,
-                    dateCreated: dateUtils.localNowDateTime()
+                    dateCreated: dateUtils.localNowDateTime(),
+                    revisionSource: source ?? "manual"
                 },
                 true
             );

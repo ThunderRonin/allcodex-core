@@ -177,8 +177,9 @@ function register(router: Router) {
 
     eu.route(router, "post", "/etapi/notes/:noteId/revision", (req, res, next) => {
         const note = eu.getAndCheckNote(req.params.noteId);
+        const source = req.header("x-revision-source");
 
-        note.saveRevision();
+        note.saveRevision(source);
 
         return res.sendStatus(204);
     });
