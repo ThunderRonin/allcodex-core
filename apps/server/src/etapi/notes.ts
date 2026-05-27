@@ -133,12 +133,13 @@ function register(router: Router) {
 
     eu.route(router, "put", "/etapi/notes/:noteId/content", (req, res, next) => {
         const note = eu.getAndCheckNote(req.params.noteId);
+        const source = req.header("x-revision-source");
 
         if (note.isProtected) {
             throw new eu.EtapiError(400, "NOTE_IS_PROTECTED", `Note '${req.params.noteId}' is protected and cannot be modified through ETAPI.`);
         }
 
-        noteService.saveRevisionIfNeeded(note);
+        noteService.saveRevisionIfNeeded(note, source);
         note.setContent(req.body);
 
         noteService.asyncPostProcessContent(note, req.body);
@@ -177,8 +178,9 @@ function register(router: Router) {
 
     eu.route(router, "post", "/etapi/notes/:noteId/revision", (req, res, next) => {
         const note = eu.getAndCheckNote(req.params.noteId);
+        const source = req.header("x-revision-source");
 
-        note.saveRevision();
+        note.saveRevision(source);
 
         return res.sendStatus(204);
     });

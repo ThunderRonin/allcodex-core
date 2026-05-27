@@ -79,7 +79,9 @@ function mapRevisionToPojo(revision: BRevision) {
         utcDateLastEdited: revision.utcDateLastEdited,
         utcDateCreated: revision.utcDateCreated,
         utcDateModified: revision.utcDateModified,
-        contentLength: revision.contentLength
+        contentLength: revision.contentLength,
+        description: revision.description ?? "",
+        revisionSource: revision.revisionSource ?? "manual"
     };
 }
 
