@@ -744,7 +744,7 @@ function saveLinks(note: BNote, content: string | Buffer) {
     return { forceFrontendReload, content };
 }
 
-function saveRevisionIfNeeded(note: BNote) {
+function saveRevisionIfNeeded(note: BNote, source?: string) {
     // files and images are versioned separately
     if (note.type === "file" || note.type === "image" || note.isLabelTruthy("disableVersioning")) {
         return;
@@ -760,7 +760,7 @@ function saveRevisionIfNeeded(note: BNote) {
     const msSinceDateCreated = now.getTime() - dateUtils.parseDateTime(note.utcDateCreated).getTime();
 
     if (!existingRevisionId && msSinceDateCreated >= revisionSnapshotTimeInterval * 1000) {
-        note.saveRevision();
+        note.saveRevision(source);
     }
 }
 
