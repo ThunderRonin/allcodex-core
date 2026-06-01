@@ -31,7 +31,7 @@ AllKnower calls AllCodex. The Portal calls AllCodex. AllCodex just serves data.
 ## Quick Start
 
 ### Requirements
-- Node.js 20+
+- Node.js 22.x (Node 26 breaks better-sqlite3 native bindings)
 - pnpm 10+
 
 ### Install and run
@@ -140,9 +140,7 @@ apps/
 
 packages/
   commons/             Shared types and utilities
-  share-theme/         CSS + templates for /share/ pages
-  highlightjs/         Syntax highlighting
-  pdfjs-viewer/        PDF viewer for shared notes
+  codemirror/          Code editor bundle
   express-partial-content/   Range request support
   turndown-plugin-gfm/      Markdown conversion
 ```
@@ -173,7 +171,7 @@ A few things to keep in mind:
 - **Test your changes.** If you're touching ETAPI endpoints or the share renderer, write or update tests.
 - **Don't break existing APIs.** ETAPI is consumed by the Portal and AllKnower. Changing endpoint signatures or response shapes needs discussion first.
 - **Templates go in `hidden_subtree_templates.ts`.** If you want to add a new lore type or modify an existing one, that's the file.
-- **Share page styling lives in `packages/share-theme/`.** CSS changes for `/share/` go there, not in the server code.
+- **Share page rendering lives in `apps/server/src/share/`.** Content processing (gmOnly, world variables) is in `content_renderer.ts`.
 
 If you're not sure where to start, look for issues tagged `good first issue`, or open a discussion with your idea before writing code.
 
