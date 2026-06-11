@@ -1,4 +1,4 @@
-# AllCodex
+# <img src="../logo/grimoire.svg" width="40" height="40" align="center" style="margin-right: 10px;" /> AllCodex Core
 
 Self-hosted lore database for worldbuilding. A server-only fork of [TriliumNext/Trilium](https://github.com/TriliumNext/Trilium), stripped down to its core and rebuilt for writers, game masters, and world builders.
 
