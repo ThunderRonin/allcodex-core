@@ -6,7 +6,7 @@ AllCodex stores your worldbuilding notes in SQLite and serves them over a REST A
 
 ## Ecosystem
 
-AllCodex is one piece of the AllKnower stack:
+AllCodex works alongside the other services in the AllKnower stack:
 
 | Service | Role | Repo |
 |---------|------|------|
@@ -14,7 +14,7 @@ AllCodex is one piece of the AllKnower stack:
 | **AllCodex-Portal** | Web frontend for browsing and editing lore | [ThunderRonin/AllCodex-Portal](https://github.com/ThunderRonin/AllCodex-Portal) |
 | **AllKnower** | AI orchestrator: brain dump, consistency checks, relationship discovery. *(Refer to AllKnower's `.env.example` for LLM model preferences)* | [ThunderRonin/Allknower](https://github.com/ThunderRonin/Allknower) |
 
-AllKnower calls AllCodex. The Portal calls AllCodex. AllCodex just serves data.
+AllKnower calls AllCodex. The Portal calls AllCodex. AllCodex serves data.
 
 ## Features
 
@@ -57,9 +57,9 @@ docker run -p 8080:8080 -v allcodex-data:/home/node/allcodex-data allcodex
 
 ### Initialize the app
 
-On first launch the database has not been created yet. You must initialize it before doing anything else — two steps, in order:
+On first launch, you must initialize the database before performing any other operations. Follow these two steps in order:
 
-**Step 1 — create the database** (no body required):
+**Step 1: Create the database** (no body required):
 
 ```bash
 curl -X POST http://localhost:8080/api/setup/new-document
@@ -67,7 +67,7 @@ curl -X POST http://localhost:8080/api/setup/new-document
 
 Expected response: empty `200 OK`.
 
-**Step 2 — set the password:**
+**Step 2: Set the password:**
 
 ```bash
 curl -X POST http://localhost:8080/set-password \
@@ -81,7 +81,7 @@ Expected response:
 {"success": true, "redirect": "login"}
 ```
 
-If you skip step 1 and go straight to `POST /set-password`, the server redirects to `/setup` because the DB doesn't exist yet. Once the password is set, any subsequent call to `POST /set-password` returns `400 Bad Request`. To change the password later use `POST /api/password/change` with `current_password` and `new_password` fields.
+If you skip step 1 and go directly to `POST /set-password`, the server redirects to `/setup` because the database does not exist yet. Once you set the password, any subsequent call to `POST /set-password` returns `400 Bad Request`. To change the password later, use `POST /api/password/change` with `current_password` and `new_password` fields.
 
 ### Create an ETAPI token
 
